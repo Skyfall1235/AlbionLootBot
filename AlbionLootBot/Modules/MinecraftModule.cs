@@ -1,9 +1,9 @@
-﻿using ASimpleMinecraftUpdatesBot.Services;
+﻿using AlbionLootBot.Services;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 
-namespace ASimpleMinecraftUpdatesBot.Modules
+namespace AlbionLootBot.Modules
 {
     public class MinecraftModule : InteractionModuleBase<SocketInteractionContext>
     {
@@ -33,15 +33,15 @@ namespace ASimpleMinecraftUpdatesBot.Modules
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
             string guildName = Context.Guild.Name;
-            BotConfig? config = _configService.GetConfigFromContext(Context);
-            if(config is null)
+            TaxConfig? config = _configService.GetConfigFromContext(Context);
+            if (config is null)
             {
                 await FollowupAsync("❌ **Server Config Not Found.**");
                 return;
             }
 
             Console.WriteLine($"Status command run in: {guildName} ({guildId})");
-            
+
             var status = await _mcService.GetFullStatus(config);
             if (status.IsOnline)
             {
@@ -78,7 +78,7 @@ namespace ASimpleMinecraftUpdatesBot.Modules
         public async Task PingHostAsync()
         {
             await DeferAsync();
-            BotConfig? config = _configService.GetConfigFromContext(Context);
+            TaxConfig? config = _configService.GetConfigFromContext(Context);
             if (config is null)
             {
                 await FollowupAsync("❌ **Server Config Not Found.**");
@@ -93,7 +93,7 @@ namespace ASimpleMinecraftUpdatesBot.Modules
             [Summary("Hide Message?", "Is this a public or private query?")] bool isEphemeral = true)
         {
             await DeferAsync(ephemeral: isEphemeral); //we will be ephemeral but give the option to have it be static
-            BotConfig? config = _configService.GetConfigFromContext(Context);
+            TaxConfig? config = _configService.GetConfigFromContext(Context);
             if (config is not null)
             {
                 await FollowupAsync($"❌ **Server Address:** {config.MinecraftIp}:{config.Port}");
@@ -106,7 +106,7 @@ namespace ASimpleMinecraftUpdatesBot.Modules
             [Summary("Hide Message?", "Is this a public or private query?")] bool isEphemeral = true)
         {
             await DeferAsync(ephemeral: isEphemeral); //we will be ephemeral but give the option to have it be static
-            BotConfig? config = _configService.GetConfigFromContext(Context);
+            TaxConfig? config = _configService.GetConfigFromContext(Context);
             if (config is null)
             {
                 await FollowupAsync("❌ **Server Config Not Found.**");

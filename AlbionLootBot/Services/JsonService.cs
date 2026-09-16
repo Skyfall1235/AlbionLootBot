@@ -1,12 +1,10 @@
-﻿using System.Text.Json;
-
-namespace ASimpleMinecraftUpdatesBot.Services
+﻿namespace AlbionLootBot.Services
 {
     public class JsonService
     {
         private readonly string _path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "config.json");
 
-        public Dictionary<ulong, BotConfig> Configs { get; private set; }
+        public Dictionary<ulong, TaxConfig> Configs { get; private set; }
 
         public JsonService()
         {
@@ -15,14 +13,14 @@ namespace ASimpleMinecraftUpdatesBot.Services
             Configs = Load();
         }
 
-        public Dictionary<ulong, BotConfig> Load()
+        public Dictionary<ulong, TaxConfig> Load()
         {
-            if (!File.Exists(_path)) return new Dictionary<ulong, BotConfig>();
+            if (!File.Exists(_path)) return new Dictionary<ulong, TaxConfig>();
             var json = File.ReadAllText(_path);
-            return JsonSerializer.Deserialize<Dictionary<ulong, BotConfig>>(json) ?? new Dictionary<ulong, BotConfig>();
+            return JsonSerializer.Deserialize<Dictionary<ulong, TaxConfig>>(json) ?? new Dictionary<ulong, TaxConfig>();
         }
 
-        public void SaveConfig(ulong guildId, BotConfig newConfig)
+        public void SaveConfig(ulong guildId, TaxConfig newConfig)
         {
             Configs.Add(guildId, newConfig);
             SaveTextToFile();

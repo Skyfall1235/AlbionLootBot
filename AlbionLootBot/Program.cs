@@ -1,10 +1,10 @@
-﻿using ASimpleMinecraftUpdatesBot.Services;
+﻿using AlbionLootBot.Services;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using DotNetEnv;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using DotNetEnv;
 
 
 Console.WriteLine($"this Discord bot is now setting up...");
@@ -23,6 +23,7 @@ builder.Services.AddSingleton(provider =>
     return new InteractionService(client);
 });
 
+//ADD THE NORMAL SERVICES
 builder.Services.AddSingleton<JsonService>();
 builder.Services.AddSingleton<ConfigService>();
 builder.Services.AddSingleton<MineStatService>();
@@ -41,7 +42,7 @@ client.Ready += async () =>
     if (guilds != null)
     {
         foreach (SocketGuild guild in guilds)
-        {         
+        {
             await interactionService.RegisterCommandsToGuildAsync(guild.Id);
             Console.WriteLine($"✅ Registered {interactionService.Modules.Count()} modules to {guild.Name}");
             Console.WriteLine($"✅ Connected to {guild.Name} ({guild.Id}) and registered commands!");
