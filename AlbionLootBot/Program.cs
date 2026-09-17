@@ -26,7 +26,8 @@ builder.Services.AddSingleton(provider =>
 //ADD THE NORMAL SERVICES
 builder.Services.AddSingleton<JsonService>();
 builder.Services.AddSingleton<ConfigService>();
-builder.Services.AddSingleton<MineStatService>();
+builder.Services.AddSingleton<AdminService>();
+builder.Services.AddSingleton<LootSplitService>();
 
 Console.WriteLine($"Services added, now building app...");
 using IHost host = builder.Build();
