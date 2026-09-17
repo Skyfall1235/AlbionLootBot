@@ -45,7 +45,7 @@ client.Ready += async () =>
         foreach (SocketGuild guild in guilds)
         {
             await interactionService.RegisterCommandsToGuildAsync(guild.Id);
-            Console.WriteLine($"✅ Registered {interactionService.Modules.Count()} modules to {guild.Name}");
+            Console.WriteLine($"✅ Registered {interactionService.Modules.Count} modules to {guild.Name}");
             Console.WriteLine($"✅ Connected to {guild.Name} ({guild.Id}) and registered commands!");
         }
     }

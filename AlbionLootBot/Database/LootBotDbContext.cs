@@ -2,13 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 
 namespace AlbionLootBot.Database;
-public class LootBotDbContext : DbContext
+public class LootBotDbContext(DbContextOptions<LootBotDbContext> options) : DbContext(options)
 {
-    public LootBotDbContext(DbContextOptions<LootBotDbContext> options)
-        : base(options)
-    {
-    }
-
     public DbSet<Player> Players { get; set; }
     public DbSet<Lootsplit> Lootsplits { get; set; }
     public DbSet<LootsplitParticipant> LootsplitParticipants { get; set; }

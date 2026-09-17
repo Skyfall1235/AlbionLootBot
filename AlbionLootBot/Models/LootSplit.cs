@@ -62,9 +62,9 @@ public class Player
 
     [Required]
     [MaxLength(100)]
-    public string Name { get; set; }
+    public string Name { get; set; } = "";
     [MaxLength(100)]
-    public string DiscordName { get; set; }
+    public string DiscordName { get; set; } = "";
     public ulong DiscordPlayerId { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
