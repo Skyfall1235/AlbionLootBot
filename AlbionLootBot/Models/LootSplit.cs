@@ -109,6 +109,16 @@ public class Lootsplit
             : 0;
 }
 
+public static class LootsplitMethodExtensions
+{
+    public static void SetLootsplitComplete(this Lootsplit ls)
+    {
+        ls.CompletedAt = DateTime.UtcNow;
+        ls.Status = LootsplitStatus.Completed;
+    }
+}
+
+
 [Table("Participants")]
 public class LootsplitParticipant
 {

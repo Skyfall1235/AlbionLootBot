@@ -56,13 +56,46 @@ namespace AlbionLootBot.Services
 
         public async Task MarkSplitCompleted(string splitName)
         {
-
+            //get item first
+            //pragmas warning because VSC fails to see the null check below.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+            Lootsplit split = await _context.Lootsplits
+                .FirstOrDefaultAsync(ls => ls.SessionName == splitName);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+            //if not found, return
+            if (split == null) return;
+            //if found mark as split as complete :)
+            split.SetLootsplitComplete();
+            await _context.SaveChangesAsync();
         }
 
-        protected async Task FindRunningSplitsForUser(string splitName, ulong UserId)
+        //this uses the ID COLUMN to compare against a user to see if they are participating in any splits
+        protected async Task<ICollection<Lootsplit>> FindAllSplitsForUser(int PlayerId)
         {
-            //find splits that this person is a part of 
-            //we neet to get all splits the user is a part of, then
+            //get all 
+            ICollection<Lootsplit> playerSplits = await _context.LootsplitParticipants
+            .Where(lp => lp.Player.Id == PlayerId)
+            .Select(lp => lp.Lootsplit)
+            .ToListAsync();
+
+            return playerSplits;
+        }
+
+        protected async Task<ICollection<Lootsplit>> FindRunningSplitsForUser(int playerId)
+        {
+            ICollection<Lootsplit> PlayerSplits = await FindAllSplitsForUser(playerId);
+            ICollection<Lootsplit> activePlayerSplits = await _context.Lootsplits
+            .Where(ls => ls.Status == LootsplitStatus.Completed)
+            .ToListAsync();
+            return activePlayerSplits;
+        }
+
+        protected async Task<ICollection<Lootsplit>> FindCompletedSplitsForUser(int playerId)
+        {
+            return await _context.LootsplitParticipants
+            .Where(lp => lp.PlayerId == playerId && lp.Lootsplit.Status == LootsplitStatus.Completed)
+            .Select(lp => lp.Lootsplit)
+            .ToListAsync();
         }
 
         protected async Task AddPlayerToExistingSplitAsync(int existingSplitId, IUser user, ulong guildId)
@@ -73,7 +106,7 @@ namespace AlbionLootBot.Services
 
             //find if the participant is already in the split
             bool alreadyJoined = await _context.LootsplitParticipants
-        .AnyAsync(p => p.LootsplitId == existingSplitId && p.PlayerId == playerEntry.Id);
+        .AnyAsync(p => p.LootsplitId == existingSplitId && p.PlayerId == playerEntry.Id);//
 
             if (alreadyJoined)
             {
@@ -87,7 +120,6 @@ namespace AlbionLootBot.Services
         //name should be self explanatory, sometimes we know or dont know if they exist.
         protected async Task<Player> FetchOrCreatePlayerAsync(LootSplitUserContext userContext)
         {
-            // 2. Fetch or create Player record
             var player = await _context.Players
                 .FirstOrDefaultAsync(p => p.DiscordPlayerId == userContext.DiscordUserId);
 
