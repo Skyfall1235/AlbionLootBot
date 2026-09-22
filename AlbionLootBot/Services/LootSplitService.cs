@@ -16,11 +16,13 @@ namespace AlbionLootBot.Services
         public async Task<Lootsplit> CreateSplitAsync(
         IUser user,
         string sessionName,
-        double taxRatePercent)
+        ulong guildId,
+        double taxRatePercent,
+        ICollection<IUser>? Participants)
         {
             // 1. Guard against an existing open split
             var existingSplit = await _context.Lootsplits
-                .FirstOrDefaultAsync(s => s.Status == LootsplitStatus.Open);
+                .FirstOrDefaultAsync(s => s.Status == LootsplitStatus.Open && s.SessionName == sessionName);
 
             if (existingSplit != null)
             {
@@ -39,11 +41,14 @@ namespace AlbionLootBot.Services
                 Status = LootsplitStatus.Open,
                 CreatedAt = DateTime.UtcNow
             };
-
+            LootSplitUserContext initialContext = CreateUserContextDtoAsync(user, guildId);
+            Player initialParticipant = await FetchOrCreatePlayerAsync(initialContext);
             // 4. Add creator as initial participant
             newSplit.Participants.Add(new LootsplitParticipant
             {
-                PlayerId = player.Id
+                //PlayerId = player.Id
+                Lootsplit = newSplit,
+                Player = initialParticipant,
             });
 
             _context.Lootsplits.Add(newSplit);
@@ -67,6 +72,12 @@ namespace AlbionLootBot.Services
             //if found mark as split as complete :)
             split.SetLootsplitComplete();
             await _context.SaveChangesAsync();
+        }
+
+
+        public async Task DeleteSplit(string splitName, int id)
+        {
+
         }
 
         //this uses the ID COLUMN to compare against a user to see if they are participating in any splits
@@ -152,10 +163,17 @@ namespace AlbionLootBot.Services
         //pulled out so we can save participants easier.
         protected async Task SaveParticipantToSplitAsync(int existingSplitId, Player player)
         {
+            //find exisitng split via ID
+            var existingSplit = await _context.Lootsplits
+                .Where(ls => ls.Id == existingSplitId)
+                .FirstOrDefaultAsync() ?? throw new InvalidOperationException($"Attempting to Save to a lootpslit (id - {existingSplitId}) that does not exist");
+
             var participant = new LootsplitParticipant
             {
                 LootsplitId = existingSplitId,
-                PlayerId = player.Id
+                PlayerId = player.Id,
+                Lootsplit = existingSplit,
+                Player = player
             };
             _context.LootsplitParticipants.Add(participant);
             await _context.SaveChangesAsync();

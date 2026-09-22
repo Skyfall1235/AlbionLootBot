@@ -70,7 +70,7 @@ public class Player
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation
-    public ICollection<LootsplitParticipant> Participations { get; set; } = new List<LootsplitParticipant>();
+    public ICollection<LootsplitParticipant> Participations { get; set; } = [];
 }
 
 [Table("LootSplit")]
@@ -81,7 +81,7 @@ public class Lootsplit
 
     [Required]
     [MaxLength(200)]
-    public string SessionName { get; set; }
+    public required string SessionName { get; set; }
 
     public LootsplitStatus Status { get; set; } = LootsplitStatus.Open;
 
@@ -92,8 +92,8 @@ public class Lootsplit
     public DateTime? CompletedAt { get; set; }
 
     // Navigation
-    public ICollection<LootsplitParticipant> Participants { get; set; } = new List<LootsplitParticipant>();
-    public ICollection<LootItem> Items { get; set; } = new List<LootItem>();
+    public ICollection<LootsplitParticipant> Participants { get; set; } = [];
+    public ICollection<LootItem> Items { get; set; } = [];
 
     // Derived / convenience — not mapped to DB
     [NotMapped]
@@ -122,17 +122,25 @@ public static class LootsplitMethodExtensions
 [Table("Participants")]
 public class LootsplitParticipant
 {
+    //autopop by EFC
     [Key]
     public int Id { get; set; }
 
     [ForeignKey(nameof(Lootsplit))]
     public int LootsplitId { get; set; }
-    public Lootsplit Lootsplit { get; set; }
 
     [ForeignKey(nameof(Player))]
     public int PlayerId { get; set; }
-    public Player Player { get; set; }
+
+    //actual data we populate
+
+    [Required]
+    public required Player Player { get; set; }
+
+    [Required]
+    public required Lootsplit Lootsplit { get; set; }
 }
+
 
 [Table("LootEntity")]
 public class LootItem
@@ -141,14 +149,16 @@ public class LootItem
     public int Id { get; set; }
 
     [ForeignKey(nameof(Lootsplit))]
-    public int LootsplitId { get; set; }
-    public Lootsplit Lootsplit { get; set; }
+    public required int LootsplitId { get; set; }
 
     [Required]
-    public TaxableEntity taxableEntity { get; set; } = TaxableEntity.SilverBag;
+    public required Lootsplit Lootsplit { get; set; }
 
     [Required]
-    public long ValueSilver { get; set; } = 0;
+    public required TaxableEntity TaxableEntity { get; set; } = TaxableEntity.SilverBag;
+
+    [Required]
+    public required long ValueSilver { get; set; } = 0;
 
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 }

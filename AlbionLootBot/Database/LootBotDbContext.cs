@@ -48,7 +48,7 @@ public class LootBotDbContext(DbContextOptions<LootBotDbContext> options) : DbCo
         // ---- LootItem ----
         modelBuilder.Entity<LootItem>(entity =>
         {
-            entity.Property(li => li.taxableEntity)
+            entity.Property(li => li.TaxableEntity)
                 .HasConversion<string>()
                 .HasMaxLength(20);
 
