@@ -1,4 +1,5 @@
 ﻿using AlbionLootBot.Services;
+using Discord;
 using Discord.Interactions;
 
 namespace AlbionLootBot.Modules
@@ -17,14 +18,19 @@ namespace AlbionLootBot.Modules
             ulong guildId = Context.Guild.Id;
             //get split from name of split?
         }
+
         //+ remove member from split,
         [SlashCommand("AddSplitParticipant", "")]
-        public async Task AddSplitParticipant()
+        public async Task AddSplitParticipant(IUser newParticipant, string splitName = "")
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
+            int splitId = await splitService.GetSplitIdFromSessionNameAsync(splitName);
+            await splitService.AddPlayerToExistingSplitAsync(splitId, newParticipant, guildId);
 
+            //tell the user
         }
+
         //make split,
         [SlashCommand("CreateSplit", "")]
         public async Task CreateSplit()
@@ -40,6 +46,7 @@ namespace AlbionLootBot.Modules
 
             splitService.CreateSplitAsync();
         }
+
         //delete split,
         [SlashCommand("DeleteSplit", "")]
         public async Task DeleteSplit(
@@ -48,7 +55,10 @@ namespace AlbionLootBot.Modules
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
             //use guild is to ensure only delete splits within a guild.
+            await splitService.DeleteSplit(splitName);
+            //notify the user the completion status
         }
+
         //add to split total w/ items,
         [SlashCommand("AddItemValue", "")]
         public async Task AddItemValueToSplit(
@@ -58,6 +68,7 @@ namespace AlbionLootBot.Modules
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
         }
+
         //add to split total with silver bags.
         [SlashCommand("AddSilverValue", "")]
         public async Task AddSilverValueToSplit(
@@ -67,6 +78,7 @@ namespace AlbionLootBot.Modules
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
         }
+
         //calculate split,
         [SlashCommand("CalculateSplit", "")]
         public async Task CalculateSplit(
@@ -75,6 +87,7 @@ namespace AlbionLootBot.Modules
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
         }
+
         //review split value :) (we have a full crud app now)
         [SlashCommand("GetCurrentSplit", "")]
         public async Task GetCurrentSplit(
