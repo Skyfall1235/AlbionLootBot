@@ -12,17 +12,11 @@ namespace AlbionLootBot.Modules
         private readonly LootSplitService splitService = splitService;
         private readonly ConfigService _configService = config;
         //add member
-        [SlashCommand("AddSplitParticipant", "Adds a member to a given lootsplit")]
-        public async Task AddMemberToSplit()
-        {
-            await DeferAsync();
-            ulong guildId = Context.Guild.Id;
-            //get split from name of split?
-        }
+
 
         //+ remove member from split,
         [SlashCommand("AddSplitParticipant", "")]
-        public async Task AddSplitParticipant(IUser newParticipant, string splitName = "")
+        public async Task AddSplitParticipant(IUser newParticipant, string splitName)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
@@ -30,6 +24,16 @@ namespace AlbionLootBot.Modules
             await splitService.AddPlayerToExistingSplitAsync(splitId, newParticipant, guildId);
 
             //tell the user
+        }
+
+        [SlashCommand("RemoveSplitParticipant", "Adds a member to a given lootsplit")]
+        public async Task RemoveSplitParticipant(
+            [Summary("user @", "the @mention of a member to be added to this split")] IUser userToBeRemoved,
+            [Summary("Hide Message?", "Is this a public or private query?")] string splitName)
+        {
+            await DeferAsync();
+            ulong guildId = Context.Guild.Id;
+            int splitId = await splitService.GetSplitIdFromSessionNameAsync(splitName);
         }
 
         //make split,

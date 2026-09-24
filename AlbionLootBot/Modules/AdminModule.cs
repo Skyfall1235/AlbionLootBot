@@ -42,6 +42,7 @@ namespace AlbionLootBot.Modules
             await DeferAsync(ephemeral: isEphemeral); //we will be ephemeral but give the option to have it be static
         }
 
+        //get all all active splits, get all splits in guild by impliciation or ID,
 
     }
 }
