@@ -1,6 +1,7 @@
 ﻿using AlbionLootBot.Services;
 using Discord;
 using Discord.Interactions;
+using System.Text.RegularExpressions;
 
 namespace AlbionLootBot.Modules
 {
@@ -33,18 +34,50 @@ namespace AlbionLootBot.Modules
 
         //make split,
         [SlashCommand("CreateSplit", "")]
-        public async Task CreateSplit()
+        public async Task CreateSplit(
+            [Summary("Hide Message?", "Is this a public or private query?")] string splitName,
+            [Summary("participants", "Space-separated list of @mentions for all group members")] string participantsInput)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
+            IUser user = Context.User;
             if (_configService.GetConfigFromContext(Context) == null)
             {
                 throw new ArgumentException();//come back later :3
             }
 
-            double taxRate = (double)_configService.GetConfigFromContext(Context).GuildTaxRate;
+            var matches = Regex.Matches(participantsInput, @"<@!?(\d+)>");
+            var discordIds = matches
+                .Select(m => ulong.Parse(m.Groups[1].Value))
+                .Distinct()
+                .ToList();
 
-            splitService.CreateSplitAsync();
+            List<IUser> users = new List<IUser>();
+            foreach (ulong discordId in discordIds)
+            {
+                users.Add(Context.Guild.GetUser(discordId));
+            }
+
+            // Optional: Include the creator if they didn't tag themselves
+            if (!discordIds.Contains(Context.User.Id))
+            {
+                discordIds.Add(Context.User.Id);
+            }
+
+            if (discordIds.Count == 0)
+            {
+                await FollowupAsync("No valid @user mentions found in the participants argument.", ephemeral: true);
+                return;
+            }
+            TaxConfig? configContext = _configService.GetConfigFromContext(Context);
+            double taxRate = 0;
+
+            if (configContext != null)
+            {
+                taxRate = (double)configContext.GuildTaxRate;
+            }
+
+            await splitService.CreateSplitAsync(user, splitName, guildId, taxRate, users);
         }
 
         //delete split,
