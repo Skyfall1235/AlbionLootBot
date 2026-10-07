@@ -113,7 +113,7 @@ namespace AlbionLootBot.Services
             //finally, save
             await SaveParticipantToSplitAsyncDB(existingSplitId, playerEntry);
         }
-        public async Task RemovePlayerToExistingSplitAsync(int existingSplitId, IUser user, ulong guildId)
+        public async Task RemovePlayerFromExistingSplitAsync(int existingSplitId, IUser user, ulong guildId)
         {
             Player playerEntry = await FindOrGetPlayer(user, guildId);
 

@@ -1,4 +1,6 @@
-﻿namespace AlbionLootBot.Services
+﻿using System.Text.Json;
+
+namespace AlbionLootBot.Services
 {
     public class JsonService
     {

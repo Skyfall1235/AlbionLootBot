@@ -1,6 +1,6 @@
-<mxfile host="Electron" modified="2026-09-22T20:31:47.183Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.6 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="EDiymdq4FQZrbjtqCnPF" version="24.4.6" type="device">
+<mxfile host="Electron" modified="2026-09-24T22:16:25.455Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.6 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="_RFVJBZMqEA8N71zi6Sh" version="24.4.6" type="device">
   <diagram name="Page-1" id="r2NtYLDN4fC9iYmO7XQY">
-    <mxGraphModel dx="2074" dy="1196" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1194" dy="806" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -37,13 +37,13 @@
         <mxCell id="26lqIPjYW0-KWYl4Jb2T-37" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="26lqIPjYW0-KWYl4Jb2T-3" target="26lqIPjYW0-KWYl4Jb2T-6" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="26lqIPjYW0-KWYl4Jb2T-3" value=".Net Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;" parent="1" vertex="1">
+        <mxCell id="26lqIPjYW0-KWYl4Jb2T-3" value=".Net Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" parent="1" vertex="1">
           <mxGeometry x="170" y="430" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="26lqIPjYW0-KWYl4Jb2T-38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="26lqIPjYW0-KWYl4Jb2T-4" target="26lqIPjYW0-KWYl4Jb2T-3" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="26lqIPjYW0-KWYl4Jb2T-4" value="Discord" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;" parent="1" vertex="1">
+        <mxCell id="26lqIPjYW0-KWYl4Jb2T-4" value="Discord" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" parent="1" vertex="1">
           <mxGeometry x="10" y="430" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="26lqIPjYW0-KWYl4Jb2T-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="26lqIPjYW0-KWYl4Jb2T-5" target="26lqIPjYW0-KWYl4Jb2T-14" edge="1">

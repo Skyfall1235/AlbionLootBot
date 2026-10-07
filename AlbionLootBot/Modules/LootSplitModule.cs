@@ -29,17 +29,18 @@ namespace AlbionLootBot.Modules
         [SlashCommand("RemoveSplitParticipant", "Adds a member to a given lootsplit")]
         public async Task RemoveSplitParticipant(
             [Summary("user @", "the @mention of a member to be added to this split")] IUser userToBeRemoved,
-            [Summary("Hide Message?", "Is this a public or private query?")] string splitName)
+            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
             int splitId = await splitService.GetSplitIdFromSessionNameAsync(splitName);
+            await splitService.RemovePlayerFromExistingSplitAsync(splitId, userToBeRemoved, guildId);
         }
 
         //make split,
         [SlashCommand("CreateSplit", "")]
         public async Task CreateSplit(
-            [Summary("Hide Message?", "Is this a public or private query?")] string splitName,
+            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName,
             [Summary("participants", "Space-separated list of @mentions for all group members")] string participantsInput)
         {
             await DeferAsync();
@@ -87,7 +88,7 @@ namespace AlbionLootBot.Modules
         //delete split,
         [SlashCommand("DeleteSplit", "")]
         public async Task DeleteSplit(
-            [Summary("Hide Message?", "Is this a public or private query?")] string splitName)
+            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
@@ -99,8 +100,8 @@ namespace AlbionLootBot.Modules
         //add to split total w/ items,
         [SlashCommand("AddItemValue", "")]
         public async Task AddItemValueToSplit(
-            [Summary("Hide Message?", "Is this a public or private query?")] string splitName,
-            [Summary("Hide Message?", "Is this a public or private query?")] int itemValue)
+            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName,
+            [Summary("New Item Value", "X")] int itemValue)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
@@ -109,8 +110,8 @@ namespace AlbionLootBot.Modules
         //add to split total with silver bags.
         [SlashCommand("AddSilverValue", "")]
         public async Task AddSilverValueToSplit(
-            [Summary("Hide Message?", "Is this a public or private query?")] string splitName,
-            [Summary("Hide Message?", "Is this a public or private query?")] int silverValue)
+            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName,
+            [Summary("new Silver Value", "X")] int silverValue)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
@@ -119,19 +120,19 @@ namespace AlbionLootBot.Modules
         //calculate split,
         [SlashCommand("CalculateSplit", "")]
         public async Task CalculateSplit(
-            [Summary("Hide Message?", "Is this a public or private query?")] string splitName)
+            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName)
         {
             await DeferAsync();
-            ulong guildId = Context.Guild.Id;
+            //ulong guildId = Context.Guild.Id;
         }
 
         //review split value :) (we have a full crud app now)
         [SlashCommand("GetCurrentSplit", "")]
         public async Task GetCurrentSplit(
-            [Summary("Hide Message?", "Is this a public or private query?")] string splitName)
+            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName)
         {
             await DeferAsync();
-            ulong guildId = Context.Guild.Id;
+            //ulong guildId = Context.Guild.Id;
         }
 
 

@@ -1,8 +1,10 @@
-﻿using AlbionLootBot.Services;
+﻿using AlbionLootBot.Database;
+using AlbionLootBot.Services;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -28,6 +30,7 @@ builder.Services.AddSingleton<JsonService>();
 builder.Services.AddSingleton<ConfigService>();
 builder.Services.AddSingleton<AdminService>();
 builder.Services.AddSingleton<LootSplitService>();
+builder.Services.AddDbContextFactory<LootBotDbContext>(options => options.UseSqlite("Data Source=lootbot.db"));
 
 Console.WriteLine($"Services added, now building app...");
 using IHost host = builder.Build();

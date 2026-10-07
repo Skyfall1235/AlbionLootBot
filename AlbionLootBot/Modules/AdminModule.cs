@@ -25,9 +25,9 @@ namespace AlbionLootBot.Modules
         [SlashCommand("setup", "Configure the Minecraft server settings.")]
         [DefaultMemberPermissions(GuildPermission.Administrator)]
         public async Task SetupCommandAsync(
-            [Summary("name", "The name of the server")] string GuildName,
-            [Summary("ip", "The IP address of the server")] string TaxRate,
-            [Summary("channel", "The channel for updates")] SocketTextChannel? channel = null)
+            [Summary("Guild Name", "The name of the server")] string GuildName,
+            [Summary("Guild Tax Rate", "The IP address of the server")] string TaxRate,
+            [Summary("Defer to Channel?", "The channel for updates")] SocketTextChannel? channel = null)
         {
             await DeferAsync(ephemeral: true);
 
@@ -37,7 +37,7 @@ namespace AlbionLootBot.Modules
 
         [SlashCommand("playerlist", "Get your servers current registered player list.")]
         public async Task GetPlayersInGuildAsList(
-            [Summary("Hide Message?", "Is this a public or private query?")] bool isEphemeral = true)
+            [Summary("Hide Message", "Is this a public or private query?")] bool isEphemeral = true)
         {
             await DeferAsync(ephemeral: isEphemeral); //we will be ephemeral but give the option to have it be static
         }
