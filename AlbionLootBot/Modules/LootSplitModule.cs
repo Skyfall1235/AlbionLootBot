@@ -15,8 +15,11 @@ namespace AlbionLootBot.Modules
 
 
         //+ remove member from split,
-        [SlashCommand("AddSplitParticipant", "")]
-        public async Task AddSplitParticipant(IUser newParticipant, string splitName)
+        [SlashCommand("add-split-participant", "a")]
+        public async Task AddSplitParticipant(
+            [Summary(description: "the @mention of a member to be added to this split")] IUser newParticipant,
+            [Summary(description: "What is the name for this lootsplit?")] string splitName)
+
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
@@ -26,10 +29,10 @@ namespace AlbionLootBot.Modules
             //tell the user
         }
 
-        [SlashCommand("RemoveSplitParticipant", "Adds a member to a given lootsplit")]
+        [SlashCommand("remove-split-participant", "Adds a member to a given lootsplit")]
         public async Task RemoveSplitParticipant(
-            [Summary("user @", "the @mention of a member to be added to this split")] IUser userToBeRemoved,
-            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName)
+            [Summary(description: "the @mention of a member to be added to this split")] IUser userToBeRemoved,
+            [Summary(description: "What is the name for this lootsplit?")] string splitName)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
@@ -38,17 +41,18 @@ namespace AlbionLootBot.Modules
         }
 
         //make split,
-        [SlashCommand("CreateSplit", "")]
+        [SlashCommand("create-split", "a")]
         public async Task CreateSplit(
-            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName,
-            [Summary("participants", "Space-separated list of @mentions for all group members")] string participantsInput)
+            [Summary(description: "What is the name for this lootsplit?")] string splitName,
+            [Summary(description: "Space-separated list of @mentions for all group members")] string participantsInput)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
             IUser user = Context.User;
             if (_configService.GetConfigFromContext(Context) == null)
             {
-                throw new ArgumentException();//come back later :3
+                //OOOPS
+                //send notice to user that they arent in a guild?
             }
 
             var matches = Regex.Matches(participantsInput, @"<@!?(\d+)>");
@@ -86,9 +90,9 @@ namespace AlbionLootBot.Modules
         }
 
         //delete split,
-        [SlashCommand("DeleteSplit", "")]
+        [SlashCommand("delete-split", "a")]
         public async Task DeleteSplit(
-            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName)
+            [Summary(description: "What is the name for this lootsplit?")] string splitName)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
@@ -98,38 +102,38 @@ namespace AlbionLootBot.Modules
         }
 
         //add to split total w/ items,
-        [SlashCommand("AddItemValue", "")]
+        [SlashCommand("add-item-value", "a")]
         public async Task AddItemValueToSplit(
-            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName,
-            [Summary("New Item Value", "X")] int itemValue)
+            [Summary(description: "What is the name for this lootsplit?")] string splitName,
+            [Summary(description: "X")] int itemValue)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
         }
 
         //add to split total with silver bags.
-        [SlashCommand("AddSilverValue", "")]
+        [SlashCommand("add-silver-value", "a")]
         public async Task AddSilverValueToSplit(
-            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName,
-            [Summary("new Silver Value", "X")] int silverValue)
+            [Summary(description: "What is the name for this lootsplit?")] string splitName,
+            [Summary(description: "X")] int silverValue)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
         }
 
         //calculate split,
-        [SlashCommand("CalculateSplit", "")]
+        [SlashCommand("calculate-split", "a")]
         public async Task CalculateSplit(
-            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName)
+            [Summary(description: "What is the name for this lootsplit?")] string splitName)
         {
             await DeferAsync();
             //ulong guildId = Context.Guild.Id;
         }
 
         //review split value :) (we have a full crud app now)
-        [SlashCommand("GetCurrentSplit", "")]
+        [SlashCommand("get-current-split", "a")]
         public async Task GetCurrentSplit(
-            [Summary("Split Name", "What is the name for this lootsplit?")] string splitName)
+            [Summary(description: "What is the name for this lootsplit?")] string splitName)
         {
             await DeferAsync();
             //ulong guildId = Context.Guild.Id;

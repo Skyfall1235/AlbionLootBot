@@ -5,7 +5,7 @@ namespace AlbionLootBot.Database;
 public class LootBotDbContext(DbContextOptions<LootBotDbContext> options) : DbContext(options)
 {
     public DbSet<Player> Players { get; set; }
-    public DbSet<Lootsplit> Lootsplits { get; set; }
+    public DbSet<Lootsplit> LootSplit { get; set; }
     public DbSet<LootsplitParticipant> LootsplitParticipants { get; set; }
     public DbSet<LootItem> LootItems { get; set; }
     public DbSet<CalculationEntity> Calculations { get; set; }
