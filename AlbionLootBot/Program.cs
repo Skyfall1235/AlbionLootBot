@@ -48,7 +48,7 @@ Console.WriteLine($"Services added, now building app...");
 using IHost host = builder.Build();
 
 var client = host.Services.GetRequiredService<DiscordSocketClient>();
-var interactionService = host.Services.GetRequiredService<InteractionService>();
+InteractionService? interactionService = host.Services.GetRequiredService<InteractionService>();
 
 client.Ready += async () =>
 {
@@ -74,8 +74,16 @@ client.Ready += async () =>
 client.SlashCommandExecuted += async (interaction) =>
 {
     var ctx = new SocketInteractionContext(client, interaction);
+
+    var user = ctx.User;
+    var commandName = interaction.Data.Name;
+
     await interactionService.ExecuteCommandAsync(ctx, host.Services);
 };
+
+interactionService.SlashCommandExecuted += CommandLogger.LogCommandCall;
+
+
 
 // Login and Start
 Env.Load();

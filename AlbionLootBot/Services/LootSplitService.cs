@@ -224,7 +224,7 @@ namespace AlbionLootBot.Services
             return split.Id;
         }
 
-        protected LootSplitUserContext CreateUserContextDto(IUser user, ulong guildId)
+        public LootSplitUserContext CreateUserContextDto(IUser user, ulong guildId)
         {
             return new LootSplitUserContext(
                 GuildId: guildId,
@@ -256,7 +256,7 @@ namespace AlbionLootBot.Services
 
             return playerSplits;
         }
-        protected async Task<ICollection<Lootsplit>> FindRunningSplitsForUser(int playerId)
+        public async Task<ICollection<Lootsplit>> FindRunningSplitsForUser(int playerId)
         {
             LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
 
@@ -266,7 +266,7 @@ namespace AlbionLootBot.Services
             .ToListAsync();
             return activePlayerSplits;
         }
-        protected async Task<ICollection<Lootsplit>> FindCompletedSplitsForUser(int playerId)
+        public async Task<ICollection<Lootsplit>> FindCompletedSplitsForUser(int playerId)
         {
             LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
 
@@ -274,6 +274,13 @@ namespace AlbionLootBot.Services
             .Where(lp => lp.PlayerId == playerId && lp.Lootsplit.Status == LootsplitStatus.Completed)
             .Select(lp => lp.Lootsplit)
             .ToListAsync();
+        }
+
+        public async Task<Player?> GetPlayerDBInfo(IUser user)
+        {
+            LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
+            Player? player = await _context.Players.Where(p => p.DiscordPlayerId == user.Id).FirstOrDefaultAsync();
+            return player;//zero is gonna be undefined i think
         }
     }
 }

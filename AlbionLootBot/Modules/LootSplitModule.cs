@@ -1,4 +1,5 @@
-﻿using AlbionLootBot.Services;
+﻿using AlbionLootBot.Models;
+using AlbionLootBot.Services;
 using Discord;
 using Discord.Interactions;
 using System.Text.RegularExpressions;
@@ -44,7 +45,7 @@ namespace AlbionLootBot.Modules
         [SlashCommand("create-split", "a")]
         public async Task CreateSplit(
             [Summary(description: "What is the name for this lootsplit?")] string splitName,
-            [Summary(description: "Space-separated list of @mentions for all group members")] string participantsInput)
+            [Summary(description: "Space-separated list of @mentions for all group members")] string participantsInput = "")
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
@@ -53,24 +54,30 @@ namespace AlbionLootBot.Modules
             {
                 //OOOPS
                 //send notice to user that they arent in a guild?
+                await FollowupAsync("The Lootsplit Maker is not part of a registered guild, " +
+                    "and therefore cannot pull a tax rate. Tax will be set to 0 for this split.",
+                    ephemeral: true);
             }
 
-            var matches = Regex.Matches(participantsInput, @"<@!?(\d+)>");
-            var discordIds = matches
-                .Select(m => ulong.Parse(m.Groups[1].Value))
-                .Distinct()
-                .ToList();
+            var discordIds = new List<ulong> { Context.User.Id };
+
+            if (!string.IsNullOrEmpty(participantsInput))
+            {
+                var matches = Regex.Matches(participantsInput, @"<@!?(\d+)>");
+                foreach (Match match in matches)
+                {
+                    if (ulong.TryParse(match.Groups[1].Value, out var id))
+                    {
+                        discordIds.Add(id);
+                    }
+                }
+                discordIds = discordIds.Distinct().ToList();
+            }
 
             List<IUser> users = new List<IUser>();
             foreach (ulong discordId in discordIds)
             {
                 users.Add(Context.Guild.GetUser(discordId));
-            }
-
-            // Optional: Include the creator if they didn't tag themselves
-            if (!discordIds.Contains(Context.User.Id))
-            {
-                discordIds.Add(Context.User.Id);
             }
 
             if (discordIds.Count == 0)
@@ -86,7 +93,20 @@ namespace AlbionLootBot.Modules
                 taxRate = (double)configContext.GuildTaxRate;
             }
 
-            await splitService.CreateSplitAsync(user, splitName, guildId, taxRate, users);
+            Lootsplit newSplit = new()
+            {
+                SessionName = "default"
+            };
+            try
+            {
+                newSplit = await splitService.CreateSplitAsync(user, splitName, guildId, taxRate, users);
+            }
+            catch
+            {
+
+            }
+            await FollowupAsync($"Split {newSplit.SessionName} created! ID - {newSplit.Id}", ephemeral: false);
+            await FollowupAsync($"this will require multiple steps probably, and may be combined in the future :)", ephemeral: true);
         }
 
         //delete split,
@@ -99,6 +119,25 @@ namespace AlbionLootBot.Modules
             //use guild is to ensure only delete splits within a guild.
             await splitService.DeleteSplit(splitName);
             //notify the user the completion status
+            await FollowupAsync($"Split '{splitName}' deleted!", ephemeral: false);
+        }
+
+        //see all available splits
+        [SlashCommand("view-active-splits", "b")]
+        public async Task ViewActiveSplits()
+        {
+            await DeferAsync();
+            ulong guildId = Context.Guild.Id;
+            Player? player = await splitService.GetPlayerDBInfo(Context.User);
+            if (player == null)
+            {
+                await FollowupAsync("User not found in Database.");
+                return;
+            }
+            //use guild is to ensure only delete splits within a guild.
+            await splitService.FindRunningSplitsForUser(player.Id);
+            //notify the user the completion status
+            await FollowupAsync($"The following Split Sessions are active for {}: ", ephemeral: false);
         }
 
         //add to split total w/ items,
@@ -122,6 +161,8 @@ namespace AlbionLootBot.Modules
         }
 
         //calculate split,
+        //eventualyl we could have it so the tax is per PERSON to each guild
+        //via using tax via guild and the aformentioned per person calulation logic
         [SlashCommand("calculate-split", "a")]
         public async Task CalculateSplit(
             [Summary(description: "What is the name for this lootsplit?")] string splitName)

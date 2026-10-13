@@ -1,14 +1,17 @@
 ﻿using Discord.Interactions;
 
+//TO DO
+//we want to swap this config service for a database and its interactions with access stuff for it. probably siple stuff but it will allow better tax setup and role access eventually
 namespace AlbionLootBot.Services
 {
     public class TaxConfig
     {
-        public ulong GuildId;
-        public string GuildName = string.Empty;
-        //public string GuildName;
-        public int GuildTaxRate = 0;
+        public int id;//wil lbe useful for db later down the line
+        public ulong GuildId; //discord server id, not like the albion id
         public ulong TargetChannelId = 0;
+        public string GuildName = string.Empty;
+        public int GuildTaxRate = 0;
+        //eventually we will swap this to silver tax rate, item tax rate, and potentially resource tax rate?
 
         public TaxConfig(ulong guildId = 0, string guildName = "", int guildTax = 0, ulong targetChannelId = 0)
         {
