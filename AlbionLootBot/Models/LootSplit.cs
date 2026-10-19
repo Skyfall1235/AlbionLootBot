@@ -161,10 +161,10 @@ public class LootsplitParticipant
     //actual data we populate
 
     [Required]
-    public required Player Player { get; set; }
+    public Player Player { get; set; } = null!;
 
     [Required]
-    public required Lootsplit Lootsplit { get; set; }
+    public Lootsplit Lootsplit { get; set; } = null!;
 }
 
 

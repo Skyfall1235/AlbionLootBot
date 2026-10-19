@@ -1,4 +1,5 @@
-﻿using AlbionLootBot.Models;
+﻿using AlbionLootBot.Dtos;
+using AlbionLootBot.Models;
 using AlbionLootBot.Services;
 using Discord;
 using Discord.Interactions;
@@ -26,6 +27,7 @@ namespace AlbionLootBot.Modules
             {
                 splitId = await splitService.GetSplitIdFromSessionNameAsyncDB(splitName);
                 await splitService.AddPlayerToExistingSplitAsync(splitId, newParticipant, guildId);
+                await ReplyAsync($"Player: <@{newParticipant.Id}> has been added to the lootsplit: {splitName}");
             }
             catch (InvalidOperationException IOEx)
             {
@@ -36,7 +38,6 @@ namespace AlbionLootBot.Modules
             {
                 await FollowupAsync($"An uknown exeception has occurred, please contact the admin with this message: {ex.Message}");
             }
-            await ReplyAsync($"Player: <@{Context.User.Id}> has been added to the lootsplit: {splitName}");
         }
 
         [SlashCommand("remove-split-participant", "Remove a member from a currently open lootsplit")]
@@ -50,13 +51,13 @@ namespace AlbionLootBot.Modules
             try
             {
                 splitId = await splitService.GetSplitIdFromSessionNameAsyncDB(splitName);
+                await splitService.RemovePlayerFromExistingSplitAsync(splitId, userToBeRemoved, guildId);
+                await ReplyAsync($"Player: <@{userToBeRemoved.Id}> has been removed from the lootsplit: {splitName}");
             }
             catch (Exception ex)
             {
                 await FollowupAsync($"An uknown exeception has occurred, please contact the admin with this message: {ex.Message}");
             }
-            await splitService.RemovePlayerFromExistingSplitAsync(splitId, userToBeRemoved, guildId);
-            await ReplyAsync($"Player: <@{Context.User.Id}> has been removed from the lootsplit: {splitName}");
         }
 
         //make split,
@@ -193,21 +194,25 @@ namespace AlbionLootBot.Modules
         //add to split total w/ items,
         [SlashCommand("add-item-value", "NOT YET IMPLEMENTED")]
         public async Task AddItemValueToSplit(
-            [Summary(description: "What is the name for this lootsplit?")] string splitName,
-            [Summary(description: "X")] int itemValue)
+            [Summary(description: "What is the name for this lootsplit?")] string sessionName,
+            [Summary(description: "Silver or Items?")] TaxableEntity entityType,
+            [Summary(description: "Silver Value")] int itemValue)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
-        }
+            LootItemDTO newDto = new(entityType, itemValue);
+            int existingSplitId;
+            try
+            {
+                existingSplitId = await splitService.GetSplitIdFromSessionNameAsyncDB(sessionName);
+                await splitService.AddItemToLootsplitAsyncDB(existingSplitId, newDto);
+                await FollowupAsync($"{entityType} item with silver value of {itemValue} added to {sessionName}");
+            }
+            catch (Exception ex)
+            {
+                await FollowupAsync(ex.Message);
+            }
 
-        //add to split total with silver bags.
-        [SlashCommand("add-silver-value", "NOT YET IMPLEMENTED")]
-        public async Task AddSilverValueToSplit(
-            [Summary(description: "What is the name for this lootsplit?")] string splitName,
-            [Summary(description: "X")] int silverValue)
-        {
-            await DeferAsync();
-            ulong guildId = Context.Guild.Id;
         }
 
         //calculate split,

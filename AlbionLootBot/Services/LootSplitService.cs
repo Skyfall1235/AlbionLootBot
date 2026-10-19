@@ -148,17 +148,19 @@ namespace AlbionLootBot.Services
         {
             await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
             int existingId = await GetSplitIdFromSessionNameAsyncDB(existingSplitName);
-            Lootsplit split = await RetrieveSingleLootsplitAsyncDB(_context, existingId) ?? throw new InvalidDataException("Session name not associated with any split");
+            Lootsplit split = await RetrieveSingleLootsplitAsyncDB(_context, existingId) ?? throw new InvalidDataException($"Session name '{existingSplitName}' not associated with any split");
             return split;
         }
 
-        public static async Task AddItemToLootsplitAsyncDB(int existingSplitId, LootBotDbContext context, LootItemDTO dto)
+        public async Task AddItemToLootsplitAsyncDB(int existingSplitId, LootItemDTO dto)
         {
+            await using LootBotDbContext? context = await _contextFactory.CreateDbContextAsync();
             Lootsplit? existingSplit = await RetrieveSingleLootsplitAsyncDB(context, existingSplitId);
             if (existingSplit == null) throw new ArgumentNullException(nameof(existingSplit));
             if (existingSplit.Status == LootsplitStatus.Completed) throw new InaccessableActionException("Cannot modify a completed split. Please make a new split");
             LootItem newItem = new(existingSplitId, dto.TaxableEntity, dto.ValueSilver);
             await context.LootItems.AddAsync(newItem);
+            await context.SaveChangesAsync();
         }
 
         /// <summary>
@@ -235,38 +237,37 @@ namespace AlbionLootBot.Services
 
         protected async Task SaveParticipantToSplitAsyncDB(int existingSplitId, Player player)
         {
-            LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
+            await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
 
-            var existingSplit = await _context.LootSplit
-                .FirstOrDefaultAsync(ls => ls.Id == existingSplitId)
-                ?? throw new InvalidOperationException($"Attempting to save to a lootsplit (id - {existingSplitId}) that does not exist");
+            bool splitExists = await _context.LootSplit.AnyAsync(ls => ls.Id == existingSplitId);
+            if (!splitExists)
+                throw new InvalidOperationException($"Attempting to save to a lootsplit (id - {existingSplitId}) that does not exist");
 
-            bool alreadyExists = await DoesPlayerExistInLootSplitAsyncDB(_context, existingSplitId, player);
-
-            if (alreadyExists)
-            {
+            if (await DoesPlayerExistInLootSplitAsyncDB(_context, existingSplitId, player))
                 throw new InvalidOperationException($"Player {player.Id} is already a participant in lootsplit {existingSplitId}");
-            }
+
 
             var participant = new LootsplitParticipant
             {
                 LootsplitId = existingSplitId,
                 PlayerId = player.Id,
-                Lootsplit = existingSplit,
-                Player = player
             };
             _context.LootsplitParticipants.Add(participant);
             await _context.SaveChangesAsync();
         }
         protected async Task RemoveParticipantFromSplitAsyncDB(int existingSplitId, Player player)
         {
-            LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
+            await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
 
             var lsp = await _context.LootsplitParticipants
                 .FirstOrDefaultAsync(p => p.LootsplitId == existingSplitId && p.PlayerId == player.Id)
                 ?? throw new InvalidOperationException($"Player {player.Id} is not a participant in lootsplit {existingSplitId}");
 
             _context.LootsplitParticipants.Remove(lsp);
+
+            _context.ChangeTracker.DetectChanges();
+            Console.WriteLine("#####################111111#################### " + _context.ChangeTracker.DebugView.LongView);
+
             await _context.SaveChangesAsync();
         }
         //name should be self explanatory, sometimes we know or dont know if they exist.
@@ -299,6 +300,8 @@ namespace AlbionLootBot.Services
             await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
 
             Lootsplit? split = await _context.LootSplit.FirstOrDefaultAsync(ls => ls.SessionName == sessionName) ?? throw new InvalidDataException("Session name not associated with any split");
+            _context.ChangeTracker.DetectChanges();
+            Console.WriteLine("######################55555################### " + _context.ChangeTracker.DebugView.LongView);
             return split.Id;
         }
 
