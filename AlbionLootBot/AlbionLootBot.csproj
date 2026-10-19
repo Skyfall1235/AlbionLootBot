@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>ac48a477-1c11-4daa-832e-a9d76e0637ff</UserSecretsId>
@@ -12,7 +12,6 @@
     <PackageReference Include="Discord.Net.Interactions" Version="3.20.1" />
     <PackageReference Include="Discord.Net.WebSocket" Version="3.20.1" />
     <PackageReference Include="DotNetEnv" Version="3.2.0" />
-    <PackageReference Include="EntityFramework" Version="6.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.20" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -24,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Dtos\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
 	

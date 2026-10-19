@@ -25,17 +25,9 @@ builder.Services.AddSingleton(provider =>
     return new InteractionService(client);
 });
 
+
 //ADD THE NORMAL SERVICES
 builder.Services.AddDbContextFactory<LootBotDbContext>(options => options.UseSqlite("Data Source=lootbot.db"));
-using (var scope = builder.Services.BuildServiceProvider().CreateScope())
-{
-    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<LootBotDbContext>>();
-    using var context = factory.CreateDbContext();
-
-    // 2. This checks the DB and builds any missing tables automatically on startup!
-    context.Database.Migrate();
-    Console.WriteLine("✅ Database schema verified and updated successfully!");
-}
 
 builder.Services.AddSingleton<JsonService>();
 builder.Services.AddSingleton<ConfigService>();
@@ -46,6 +38,15 @@ builder.Services.AddSingleton<LootSplitService>();
 
 Console.WriteLine($"Services added, now building app...");
 using IHost host = builder.Build();
+
+
+using (var scope = host.Services.CreateScope())
+{
+    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<LootBotDbContext>>();
+    using var context = factory.CreateDbContext();
+    context.Database.Migrate();
+    Console.WriteLine("✅ Database schema verified and updated successfully!");
+}
 
 var client = host.Services.GetRequiredService<DiscordSocketClient>();
 InteractionService? interactionService = host.Services.GetRequiredService<InteractionService>();

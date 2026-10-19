@@ -30,11 +30,11 @@ namespace AlbionLootBot.Modules
 
 
 
-        [SlashCommand("setup", "Configure the Minecraft server settings.")]
+        [SlashCommand("setup", "Configure the server settings.")]
         [DefaultMemberPermissions(GuildPermission.Administrator)]
         public async Task SetupCommandAsync(
-            [Summary(description: "The name of the server")] string GuildName,
-            [Summary(description: "The IP address of the server")] string TaxRate,
+            [Summary(description: "The name of the guild")] string GuildName,
+            [Summary(description: "Server tax rate")] string TaxRate,
             [Summary(description: "The channel for updates")] SocketTextChannel? channel = null)
         {
             await DeferAsync(ephemeral: true);

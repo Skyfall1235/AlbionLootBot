@@ -6,17 +6,14 @@ using System.Text.RegularExpressions;
 
 namespace AlbionLootBot.Modules
 {
-    public class LootSplitModule(InteractionService interactionService, AdminService adminService, LootSplitService splitService, ConfigService config) : InteractionModuleBase<SocketInteractionContext>
+    public partial class LootSplitModule(InteractionService interactionService, LootSplitService splitService, ConfigService config) : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly InteractionService _interactionService = interactionService;
-        private readonly AdminService adminService = adminService;
         private readonly LootSplitService splitService = splitService;
         private readonly ConfigService _configService = config;
-        //add member
 
-
-        //+ remove member from split,
-        [SlashCommand("add-split-participant", "a")]
+        //add member + remove member from split
+        [SlashCommand("add-split-participant", "Add a participant to a currently open split.")]
         public async Task AddSplitParticipant(
             [Summary(description: "the @mention of a member to be added to this split")] IUser newParticipant,
             [Summary(description: "What is the name for this lootsplit?")] string splitName)
@@ -24,25 +21,46 @@ namespace AlbionLootBot.Modules
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
-            int splitId = await splitService.GetSplitIdFromSessionNameAsync(splitName);
-            await splitService.AddPlayerToExistingSplitAsync(splitId, newParticipant, guildId);
-
-            //tell the user
+            int splitId;
+            try
+            {
+                splitId = await splitService.GetSplitIdFromSessionNameAsyncDB(splitName);
+                await splitService.AddPlayerToExistingSplitAsync(splitId, newParticipant, guildId);
+            }
+            catch (InvalidOperationException IOEx)
+            {
+                //alt alert
+                await FollowupAsync($"Operation Failed : {IOEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                await FollowupAsync($"An uknown exeception has occurred, please contact the admin with this message: {ex.Message}");
+            }
+            await ReplyAsync($"Player: <@{Context.User.Id}> has been added to the lootsplit: {splitName}");
         }
 
-        [SlashCommand("remove-split-participant", "Adds a member to a given lootsplit")]
+        [SlashCommand("remove-split-participant", "Remove a member from a currently open lootsplit")]
         public async Task RemoveSplitParticipant(
             [Summary(description: "the @mention of a member to be added to this split")] IUser userToBeRemoved,
             [Summary(description: "What is the name for this lootsplit?")] string splitName)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
-            int splitId = await splitService.GetSplitIdFromSessionNameAsync(splitName);
+            int splitId = 0;//default to prevent errors, 
+            try
+            {
+                splitId = await splitService.GetSplitIdFromSessionNameAsyncDB(splitName);
+            }
+            catch (Exception ex)
+            {
+                await FollowupAsync($"An uknown exeception has occurred, please contact the admin with this message: {ex.Message}");
+            }
             await splitService.RemovePlayerFromExistingSplitAsync(splitId, userToBeRemoved, guildId);
+            await ReplyAsync($"Player: <@{Context.User.Id}> has been removed from the lootsplit: {splitName}");
         }
 
         //make split,
-        [SlashCommand("create-split", "a")]
+        [SlashCommand("create-split", "Create new lootsplit for you and potentially your friends!")]
         public async Task CreateSplit(
             [Summary(description: "What is the name for this lootsplit?")] string splitName,
             [Summary(description: "Space-separated list of @mentions for all group members")] string participantsInput = "")
@@ -93,26 +111,24 @@ namespace AlbionLootBot.Modules
                 taxRate = (double)configContext.GuildTaxRate;
             }
 
-            Lootsplit newSplit = new()
-            {
-                SessionName = "default"
-            };
+            Lootsplit newSplit = new() { SessionName = "default" };
+
             try
             {
                 newSplit = await splitService.CreateSplitAsync(user, splitName, guildId, taxRate, users);
+                await ReplyAsync($"Split {newSplit.SessionName} created! ID - {newSplit.Id}");
+                await FollowupAsync($"this will require multiple steps probably, and may be combined in the future :)", ephemeral: true);
             }
-            catch
+            catch (InvalidOperationException IOEx)
             {
-
+                await FollowupAsync(IOEx.Message);
             }
-            await FollowupAsync($"Split {newSplit.SessionName} created! ID - {newSplit.Id}", ephemeral: false);
-            await FollowupAsync($"this will require multiple steps probably, and may be combined in the future :)", ephemeral: true);
         }
 
         //delete split,
-        [SlashCommand("delete-split", "a")]
+        [SlashCommand("delete-split", "this does not currently have confirmation. If you do this, statistics for your guild may be lost.")]
         public async Task DeleteSplit(
-            [Summary(description: "What is the name for this lootsplit?")] string splitName)
+            [Summary(description: "What is the name of the lootsplit?")] string splitName)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
@@ -122,26 +138,60 @@ namespace AlbionLootBot.Modules
             await FollowupAsync($"Split '{splitName}' deleted!", ephemeral: false);
         }
 
-        //see all available splits
-        [SlashCommand("view-active-splits", "b")]
-        public async Task ViewActiveSplits()
+        //see all available splits for the user
+        [SlashCommand("view-active-splits", "See your active splits")]
+        public async Task ViewUserActiveSplits()
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
-            Player? player = await splitService.GetPlayerDBInfo(Context.User);
-            if (player == null)
+            try
             {
-                await FollowupAsync("User not found in Database.");
-                return;
+                Player player = await ConfirmUserExists(Context);
+                ICollection<Lootsplit> lootsplitList = await splitService.FindRunningSplitsForUserAsyncDB(player.Id);
+
+                string sessionNamesList = string.Join(", ", lootsplitList.Select(s => s.SessionName));
+
+                await FollowupAsync($"The following Split Sessions are active for <@{Context.User.Id}>: {sessionNamesList}");
             }
-            //use guild is to ensure only delete splits within a guild.
-            await splitService.FindRunningSplitsForUser(player.Id);
-            //notify the user the completion status
-            await FollowupAsync($"The following Split Sessions are active for {}: ", ephemeral: false);
+            catch (UserNotFoundException ex)
+            {
+                // Since you deferred the response earlier, use FollowupAsync to send the error message
+                await FollowupAsync($"Could not load your active splits: {ex.Message}", ephemeral: true);
+            }
+            catch (Exception ex)
+            {
+                await ReplyAsync($"An Unknown error occured with the active split logic, please message admin with this info : {ex.Message}");
+            }
+        }
+
+        //see all active splits for admin
+        [SlashCommand("view-all-active-splits", "Admin view of all active splits")]
+        public async Task ViewAllActiveSplits()
+        {
+            await DeferAsync();
+            ulong guildId = Context.Guild.Id;
+            try
+            {
+                Player player = await ConfirmUserExists(Context);
+                ICollection<Lootsplit> lootsplitList = await splitService.FindRunningSplitsForUserAsyncDB(player.Id);
+
+                string sessionNamesList = string.Join(", ", lootsplitList.Select(s => s.SessionName));
+
+                await FollowupAsync($"The following Split Sessions are active for <@{Context.User.Id}>: {sessionNamesList}");
+            }
+            catch (UserNotFoundException ex)
+            {
+                // Since you deferred the response earlier, use FollowupAsync to send the error message
+                await FollowupAsync($"Could not load your active splits: {ex.Message}", ephemeral: true);
+            }
+            catch (Exception ex)
+            {
+                await ReplyAsync($"An Unknown error occured with the active split logic, please message admin with this info : {ex.Message}");
+            }
         }
 
         //add to split total w/ items,
-        [SlashCommand("add-item-value", "a")]
+        [SlashCommand("add-item-value", "NOT YET IMPLEMENTED")]
         public async Task AddItemValueToSplit(
             [Summary(description: "What is the name for this lootsplit?")] string splitName,
             [Summary(description: "X")] int itemValue)
@@ -151,7 +201,7 @@ namespace AlbionLootBot.Modules
         }
 
         //add to split total with silver bags.
-        [SlashCommand("add-silver-value", "a")]
+        [SlashCommand("add-silver-value", "NOT YET IMPLEMENTED")]
         public async Task AddSilverValueToSplit(
             [Summary(description: "What is the name for this lootsplit?")] string splitName,
             [Summary(description: "X")] int silverValue)
@@ -163,25 +213,53 @@ namespace AlbionLootBot.Modules
         //calculate split,
         //eventualyl we could have it so the tax is per PERSON to each guild
         //via using tax via guild and the aformentioned per person calulation logic
-        [SlashCommand("calculate-split", "a")]
+        [SlashCommand("calculate-split", "Calculate the lootsplit per person AND close the lootsplit")]
         public async Task CalculateSplit(
             [Summary(description: "What is the name for this lootsplit?")] string splitName)
         {
             await DeferAsync();
-            //ulong guildId = Context.Guild.Id;
+            ulong guildId = Context.Guild.Id;
+
+            int splitId = 0;//default to prevent errors, 
+            try
+            {
+                splitId = await splitService.GetSplitIdFromSessionNameAsyncDB(splitName);
+            }
+            catch
+            {
+                await FollowupAsync($"Unable to find pootsplit : '{splitName}' in database");
+            }
+
+            try
+            {
+                CalculationEntity? calcEntity = await splitService.CompleteSplitAndCalculatePayout(splitId, Context.User, guildId);
+                await DiscordResponse.SendCalculationResultAsync(Context, calcEntity, splitName);
+            }
+            catch (Exception ex)
+            {
+                await FollowupAsync($"An unexpected error occured : {ex}");
+            }
         }
 
         //review split value :) (we have a full crud app now)
-        [SlashCommand("get-current-split", "a")]
+        [SlashCommand("get-current-split", "Get the full split value currently")]
         public async Task GetCurrentSplit(
             [Summary(description: "What is the name for this lootsplit?")] string splitName)
         {
             await DeferAsync();
             //ulong guildId = Context.Guild.Id;
+            Lootsplit split;
+            try
+            {
+                split = await splitService.ViewActiveSplitContents(splitName);
+                long totalSilver = split.TotalSilver;
+                await FollowupAsync($"The total value of {splitName}'s silver value is {totalSilver} silver");
+            }
+            catch (Exception ex)
+            {
+                await FollowupAsync(ex.Message);
+            }
+
         }
-
-
-
-
     }
 }

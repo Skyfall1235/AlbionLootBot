@@ -23,11 +23,6 @@ namespace AlbionLootBot.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CalculationId")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("TEXT");
-
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("TEXT");
 
@@ -38,9 +33,6 @@ namespace AlbionLootBot.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<decimal>("NetTotalAfterTax")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("PerPersonGrossShare")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("PerPersonNetShare")
@@ -63,7 +55,7 @@ namespace AlbionLootBot.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CalculationId")
+                    b.HasIndex("Id")
                         .IsUnique();
 
                     b.HasIndex("LootsplitId");

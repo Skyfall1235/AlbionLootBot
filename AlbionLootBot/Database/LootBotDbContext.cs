@@ -61,7 +61,7 @@ public class LootBotDbContext(DbContextOptions<LootBotDbContext> options) : DbCo
         // ---- CalculationEntity ----
         modelBuilder.Entity<CalculationEntity>(entity =>
         {
-            entity.HasIndex(c => c.CalculationId).IsUnique();
+            entity.HasIndex(c => c.Id).IsUnique();
 
             entity.HasOne(c => c.Lootsplit)
                 .WithMany() // no back-reference on Lootsplit; add one if you want history navigation

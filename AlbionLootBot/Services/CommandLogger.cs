@@ -27,7 +27,7 @@ public class CommandLogger
     }
 
     //save to db in da future
-    protected async Task LogCommandCallToDbAsync() { }
+    //protected async Task LogCommandCallToDbAsync() { }
 
 
 }
