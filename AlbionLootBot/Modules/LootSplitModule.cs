@@ -192,7 +192,7 @@ namespace AlbionLootBot.Modules
         }
 
         //add to split total w/ items,
-        [SlashCommand("add-item-value", "NOT YET IMPLEMENTED")]
+        [SlashCommand("add-item-value", "Add Silver or Item vlaue to the split")]
         public async Task AddItemValueToSplit(
             [Summary(description: "What is the name for this lootsplit?")] string sessionName,
             [Summary(description: "Silver or Items?")] TaxableEntity entityType,
@@ -220,7 +220,7 @@ namespace AlbionLootBot.Modules
         //via using tax via guild and the aformentioned per person calulation logic
         [SlashCommand("calculate-split", "Calculate the lootsplit per person AND close the lootsplit")]
         public async Task CalculateSplit(
-            [Summary(description: "What is the name for this lootsplit?")] string splitName)
+            [Summary(description: "What is the name of this lootsplit?")] string splitName)
         {
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
@@ -249,7 +249,7 @@ namespace AlbionLootBot.Modules
         //review split value :) (we have a full crud app now)
         [SlashCommand("get-current-split", "Get the full split value currently")]
         public async Task GetCurrentSplit(
-            [Summary(description: "What is the name for this lootsplit?")] string splitName)
+            [Summary(description: "What is the name of this lootsplit?")] string splitName)
         {
             await DeferAsync();
             //ulong guildId = Context.Guild.Id;
