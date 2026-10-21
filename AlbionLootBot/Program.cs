@@ -30,7 +30,7 @@ builder.Services.AddSingleton(provider =>
 builder.Services.AddDbContextFactory<LootBotDbContext>(options => options.UseSqlite("Data Source=lootbot.db"));
 
 builder.Services.AddSingleton<JsonService>();
-builder.Services.AddSingleton<ConfigService>();
+builder.Services.AddSingleton<IConfigService, ConfigService>();
 builder.Services.AddSingleton<AdminService>();
 builder.Services.AddSingleton<LootSplitService>();
 

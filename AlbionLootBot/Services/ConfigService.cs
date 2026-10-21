@@ -22,7 +22,7 @@ namespace AlbionLootBot.Services
         }
     }
 
-    public class ConfigService
+    public class ConfigService : IConfigService
     {
         readonly JsonService? _jsonService;
 
