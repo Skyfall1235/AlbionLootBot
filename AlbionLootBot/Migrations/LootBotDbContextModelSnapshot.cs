@@ -17,6 +17,36 @@ namespace AlbionLootBot.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.20");
 
+            modelBuilder.Entity("AlbionLootBot.Models.AOGuildInfo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("AlbionOnlineGuildName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<ulong>("DiscordGuildId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("ItemValueTaxRate")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("ResourceTaxRate")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("SilverTaxRate")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DiscordGuildId")
+                        .IsUnique();
+
+                    b.ToTable("AOGuildInfo");
+                });
+
             modelBuilder.Entity("AlbionLootBot.Models.CalculationEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -26,22 +56,22 @@ namespace AlbionLootBot.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal>("ItemTotal")
+                    b.Property<long>("ItemTotal")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("LootsplitId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("NetTotalAfterTax")
+                    b.Property<long>("NetTotalAfterTax")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("PerPersonNetShare")
+                    b.Property<long>("PerPersonNetShare")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("RecipientCount")
                         .HasColumnType("INTEGER");
 
-                    b.Property<decimal>("Remainder")
+                    b.Property<long>("Remainder")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("SilverBagTotal")
@@ -50,7 +80,7 @@ namespace AlbionLootBot.Migrations
                     b.Property<decimal>("TaxRatePercent")
                         .HasColumnType("decimal(5,2)");
 
-                    b.Property<decimal>("TotalTaxAmount")
+                    b.Property<long>("TotalTaxAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -61,6 +91,77 @@ namespace AlbionLootBot.Migrations
                     b.HasIndex("LootsplitId");
 
                     b.ToTable("Calculations");
+                });
+
+            modelBuilder.Entity("AlbionLootBot.Models.CalculationParticipantPayout", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("AOGuildInfoId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("CalculationEntityId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("GrossShare")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("NetShare")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("PlayerId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AOGuildInfoId");
+
+                    b.HasIndex("CalculationEntityId");
+
+                    b.HasIndex("PlayerId");
+
+                    b.ToTable("ParticipantPayout");
+                });
+
+            modelBuilder.Entity("AlbionLootBot.Models.GuildTaxEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AOGuildInfoId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ParticipantPayoutId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("RateApplied")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("TaxAmountSilver")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TaxType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("TaxableAmountSilver")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParticipantPayoutId");
+
+                    b.HasIndex("AOGuildInfoId", "PaidAt");
+
+                    b.ToTable("GuildTaxEntry");
                 });
 
             modelBuilder.Entity("AlbionLootBot.Models.LootItem", b =>
@@ -148,6 +249,9 @@ namespace AlbionLootBot.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int?>("AOGuildInfoId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -165,6 +269,8 @@ namespace AlbionLootBot.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AOGuildInfoId");
 
                     b.HasIndex("DiscordPlayerId")
                         .IsUnique();
@@ -184,6 +290,51 @@ namespace AlbionLootBot.Migrations
                         .IsRequired();
 
                     b.Navigation("Lootsplit");
+                });
+
+            modelBuilder.Entity("AlbionLootBot.Models.CalculationParticipantPayout", b =>
+                {
+                    b.HasOne("AlbionLootBot.Models.AOGuildInfo", "AOGuildInfo")
+                        .WithMany()
+                        .HasForeignKey("AOGuildInfoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("AlbionLootBot.Models.CalculationEntity", "CalculationEntity")
+                        .WithMany()
+                        .HasForeignKey("CalculationEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AlbionLootBot.Models.Player", "Player")
+                        .WithMany()
+                        .HasForeignKey("PlayerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AOGuildInfo");
+
+                    b.Navigation("CalculationEntity");
+
+                    b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("AlbionLootBot.Models.GuildTaxEntry", b =>
+                {
+                    b.HasOne("AlbionLootBot.Models.AOGuildInfo", "AOGuildInfo")
+                        .WithMany()
+                        .HasForeignKey("AOGuildInfoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AlbionLootBot.Models.CalculationParticipantPayout", "ParticipantPayout")
+                        .WithMany()
+                        .HasForeignKey("ParticipantPayoutId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AOGuildInfo");
+
+                    b.Navigation("ParticipantPayout");
                 });
 
             modelBuilder.Entity("AlbionLootBot.Models.LootItem", b =>
@@ -214,6 +365,16 @@ namespace AlbionLootBot.Migrations
                     b.Navigation("Lootsplit");
 
                     b.Navigation("Player");
+                });
+
+            modelBuilder.Entity("AlbionLootBot.Models.Player", b =>
+                {
+                    b.HasOne("AlbionLootBot.Models.AOGuildInfo", "AOGuildInfo")
+                        .WithMany()
+                        .HasForeignKey("AOGuildInfoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AOGuildInfo");
                 });
 
             modelBuilder.Entity("AlbionLootBot.Models.Lootsplit", b =>

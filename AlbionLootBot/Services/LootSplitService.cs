@@ -2,16 +2,12 @@
 using AlbionLootBot.Dtos;
 using AlbionLootBot.Models;
 using Discord;
-using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 
 namespace AlbionLootBot.Services
 {
-    public class LootSplitService(InteractionService interactionService, AdminService adminService, IDbContextFactory<LootBotDbContext> _contextFactory, ConfigService configService)
+    public class LootSplitService(IDbContextFactory<LootBotDbContext> _contextFactory)
     {
-        private readonly InteractionService _interactionService = interactionService;
-        private readonly AdminService adminService = adminService;
-        private readonly ConfigService _configService = configService;
         private readonly IDbContextFactory<LootBotDbContext> _contextFactory = _contextFactory;
 
         #region Create, modify, and Delete

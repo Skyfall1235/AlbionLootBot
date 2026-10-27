@@ -22,14 +22,9 @@ namespace AlbionLootBot.Services
         }
     }
 
-    public class ConfigService : IConfigService
+    public class ConfigService(JsonService service) : IConfigService
     {
-        readonly JsonService? _jsonService;
-
-        public ConfigService(JsonService service)
-        {
-            _jsonService = service ?? throw new ArgumentNullException(nameof(service));
-        }
+        readonly JsonService? _jsonService = service ?? throw new ArgumentNullException(nameof(service));
 
         public void UpdateConfig(ulong guildId, string? name = "", ulong? channelId = null)
         {

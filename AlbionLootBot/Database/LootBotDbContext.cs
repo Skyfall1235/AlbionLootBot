@@ -9,6 +9,9 @@ public class LootBotDbContext(DbContextOptions<LootBotDbContext> options) : DbCo
     public DbSet<LootsplitParticipant> LootsplitParticipants { get; set; }
     public DbSet<LootItem> LootItems { get; set; }
     public DbSet<CalculationEntity> Calculations { get; set; }
+    public DbSet<AOGuildInfo> AOGuilds => Set<AOGuildInfo>();
+    public DbSet<CalculationParticipantPayout> ParticipantPayouts => Set<CalculationParticipantPayout>();
+    public DbSet<GuildTaxEntry> GuildTaxEntries => Set<GuildTaxEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,5 +71,38 @@ public class LootBotDbContext(DbContextOptions<LootBotDbContext> options) : DbCo
                 .HasForeignKey(c => c.LootsplitId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+
+        modelBuilder.Entity<AOGuildInfo>()
+        .HasIndex(g => g.DiscordGuildId)
+    .IsUnique();
+
+        modelBuilder.Entity<GuildTaxEntry>()
+            .HasIndex(e => new { e.AOGuildInfoId, e.PaidAt });
+
+        // deleting a guild must never wipe the ledger
+        modelBuilder.Entity<GuildTaxEntry>()
+            .HasOne(e => e.AOGuildInfo)
+            .WithMany()
+            .HasForeignKey(e => e.AOGuildInfoId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // deleting a payout (via its calculation) removes its tax entries
+        modelBuilder.Entity<GuildTaxEntry>()
+            .HasOne(e => e.ParticipantPayout)
+            .WithMany()
+            .HasForeignKey(e => e.ParticipantPayoutId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Player>()
+            .HasOne(p => p.AOGuildInfo)
+            .WithMany()
+            .HasForeignKey(p => p.AOGuildInfoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<CalculationParticipantPayout>()
+            .HasOne(p => p.AOGuildInfo)
+            .WithMany()
+            .HasForeignKey(p => p.AOGuildInfoId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -10,7 +10,7 @@ public enum LootsplitStatus
 }
 public enum TaxableEntity
 {
-    SilverBag, Item
+    SilverBag, Item, Resource
 }
 
 [Table("Calculations")]
@@ -29,44 +29,25 @@ public class CalculationEntity
     [Column(TypeName = "decimal(18,2)")]
     public decimal SilverBagTotal { get; set; }
     [Column(TypeName = "decimal(18,2)")]
-    public decimal ItemTotal { get; set; }
+    public long ItemTotal { get; set; }
     public int RecipientCount { get; set; }
     [Column(TypeName = "decimal(5,2)")]
     public decimal TaxRatePercent { get; set; }
 
     // Tax Summary
     [Column(TypeName = "decimal(18,2)")]
-    public decimal TotalTaxAmount { get; set; }
+    public long TotalTaxAmount { get; set; }
     [Column(TypeName = "decimal(18,2)")]
-    public decimal NetTotalAfterTax { get; set; }
+    public long NetTotalAfterTax { get; set; }
 
     //we can expand this outward by logging what everyones payouts are in a new table :)
     // Distribution (Per Person)
 
     [Column(TypeName = "decimal(18,2)")]
-    public decimal PerPersonNetShare { get; set; }
+    public long PerPersonNetShare { get; set; }
     [Column(TypeName = "decimal(18,2)")]
-    public decimal Remainder { get; set; }
+    public long Remainder { get; set; }
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
-}
-
-[Table("Players")]
-public class Player
-{
-    [Key]
-    public int Id { get; set; }
-
-    [Required]
-    [MaxLength(100)]
-    public string Name { get; set; } = "";
-    [MaxLength(100)]
-    public string DiscordName { get; set; } = "";
-    public ulong DiscordPlayerId { get; set; }
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-    // Navigation
-    public ICollection<LootsplitParticipant> Participations { get; set; } = [];
 }
 
 [Table("LootSplit")]
@@ -99,9 +80,9 @@ public class Lootsplit
     public long TaxedSilver => (long)(TotalSilver * (1 - TaxRate));
 
     [NotMapped]
-    public decimal PayoutPerPerson =>
+    public long PayoutPerPerson =>
         Participants != null && Participants.Count > 0
-            ? TaxedSilver / (decimal)Participants.Count
+            ? TaxedSilver / Participants.Count
             : 0;
 }
 
@@ -118,7 +99,7 @@ public static class LootsplitMethodExtensions
         var totalSilver = split.TotalSilver;
         var taxedSilver = split.TaxedSilver;
         var participantCount = split.Participants?.Count ?? 0;
-        decimal perPersonNet = participantCount > 0 ? (decimal)taxedSilver / participantCount : 0;
+        long perPersonNet = participantCount > 0 ? taxedSilver / participantCount : 0;
 
         // Calculate total tax amount extracted
         long totalTaxAmount = totalSilver - taxedSilver;
@@ -137,7 +118,8 @@ public static class LootsplitMethodExtensions
             NetTotalAfterTax = taxedSilver,
 
             PerPersonNetShare = perPersonNet,
-            Remainder = taxedSilver - (Math.Floor(perPersonNet) * participantCount), // Tracks any leftover fractional silver decimals
+            //YUCK
+            Remainder = taxedSilver - (long)(Math.Floor((double)perPersonNet) * (double)participantCount), // Tracks any leftover fractional silver decimals
             CreatedAtUtc = DateTime.UtcNow
         };
 
@@ -191,18 +173,4 @@ public class LootItem
     public long ValueSilver { get; set; }
 
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
-}
-
-public class CalculationParticipantPayout
-{
-    [Key]
-    public int Id { get; set; }
-    [ForeignKey(nameof(CalculationEntity))]
-    public Guid CalculationEntityId { get; set; }
-    public CalculationEntity CalculationEntity { get; set; } = null!;
-    public required Player playerId { get; set; }
-    [Column(TypeName = "decimal(18,2)")]
-    public decimal GrossShare { get; set; }
-    [Column(TypeName = "decimal(18,2)")]
-    public decimal NetShare { get; set; }
 }
