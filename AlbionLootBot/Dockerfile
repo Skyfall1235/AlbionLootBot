@@ -25,5 +25,6 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENV DB_PATH=/data/lootbot.db
+ENV DATA_DIR=/data/json
 VOLUME /data
 ENTRYPOINT ["dotnet", "AlbionLootBot.dll"]

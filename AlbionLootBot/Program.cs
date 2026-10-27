@@ -14,8 +14,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSingleton(new DiscordSocketConfig
 {
-    GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMessages,
-    AlwaysDownloadUsers = true
+    GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages
 });
 
 builder.Services.AddSingleton<DiscordSocketClient>();
@@ -103,6 +102,7 @@ Console.WriteLine($"Discord token found, Bot will now begin!");
 
 client.Log += msg => { Console.WriteLine(msg.ToString()); return Task.CompletedTask; };
 interactionService.Log += msg => { Console.WriteLine(msg.ToString()); return Task.CompletedTask; };
+
 await client.LoginAsync(TokenType.Bot, apiKey);
 await client.StartAsync();
 
