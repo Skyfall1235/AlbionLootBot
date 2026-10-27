@@ -7,5 +7,11 @@
         {
 
         }
+        //add db context
+
+        //create guild
+        //change guild info
+        //change guild tax rate
+        //confirm user and role of guild?
     }
 }
