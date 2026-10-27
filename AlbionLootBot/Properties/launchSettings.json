@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "AlbionLootBot": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

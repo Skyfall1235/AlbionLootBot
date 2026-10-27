@@ -69,14 +69,14 @@ namespace AlbionLootBot.Modules
             await DeferAsync();
             ulong guildId = Context.Guild.Id;
             IUser user = Context.User;
-            if (_configService.GetConfigFromContext(Context) == null)
-            {
-                //OOOPS
-                //send notice to user that they arent in a guild?
-                await FollowupAsync("The Lootsplit Maker is not part of a registered guild, " +
-                    "and therefore cannot pull a tax rate. Tax will be set to 0 for this split.",
-                    ephemeral: true);
-            }
+            //if (_configService.GetConfigFromContext(Context) == null)
+            //{
+            //    //OOOPS
+            //    //send notice to user that they arent in a guild?
+            //    await FollowupAsync("The Lootsplit Maker is not part of a registered guild, " +
+            //        "and therefore cannot pull a tax rate. Tax will be set to 0 for this split.",
+            //        ephemeral: true);
+            //}
 
             var discordIds = new List<ulong> { Context.User.Id };
 
@@ -117,7 +117,7 @@ namespace AlbionLootBot.Modules
             try
             {
                 newSplit = await splitService.CreateSplitAsync(user, splitName, guildId, taxRate, users);
-                await ReplyAsync($"Split {newSplit.SessionName} created! ID - {newSplit.Id}");
+                await ReplyAsync($"Split {newSplit.SessionName} created! ID: {newSplit.Id}");
                 await FollowupAsync($"this will require multiple steps probably, and may be combined in the future :)", ephemeral: true);
             }
             catch (InvalidOperationException IOEx)

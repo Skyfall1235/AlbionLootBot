@@ -26,8 +26,13 @@ builder.Services.AddSingleton(provider =>
 });
 
 
+// Login and Start
+if (File.Exists(".env")) Env.Load();
+
+
 //ADD THE NORMAL SERVICES
-builder.Services.AddDbContextFactory<LootBotDbContext>(options => options.UseSqlite("Data Source=lootbot.db"));
+var dbPath = Environment.GetEnvironmentVariable("DB_PATH") ?? "lootbot.db";
+builder.Services.AddDbContextFactory<LootBotDbContext>(options => options.UseSqlite($"Data Source={dbPath}"));
 
 builder.Services.AddSingleton<JsonService>();
 builder.Services.AddSingleton<ConfigService>();
@@ -86,8 +91,6 @@ interactionService.SlashCommandExecuted += CommandLogger.LogCommandCall;
 
 
 
-// Login and Start
-Env.Load();
 string apiKey = Environment.GetEnvironmentVariable("DiscordToken") ?? throw new Exception("Discord token Environment variable not found");
 Console.WriteLine($"Discord token found, Bot will now begin!");
 
