@@ -1,6 +1,5 @@
 ﻿using AlbionLootBot.Database;
 using AlbionLootBot.Services;
-using AlbionLootBot.Services.AlbionLootBot.Services;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
