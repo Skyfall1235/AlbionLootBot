@@ -33,7 +33,7 @@ jobs:
 
       - uses: docker/build-push-action@v6
         with:
-          context: .          # folder containing the Dockerfile and .csproj
+          context: ./AlbionLootBot     # folder containing the Dockerfile and .csproj
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
