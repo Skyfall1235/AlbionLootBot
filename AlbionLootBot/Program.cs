@@ -27,7 +27,8 @@ builder.Services.AddSingleton(provider =>
 
 
 // Login and Start
-if (File.Exists(".env")) Env.Load();
+Env.TraversePath().Load("lootbot.env");
+//if (File.Exists("lootbot.env")) Env.Load();
 
 
 //ADD THE NORMAL SERVICES
