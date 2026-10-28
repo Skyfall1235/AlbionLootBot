@@ -4,17 +4,13 @@
 
     public class JsonService
     {
-        private static readonly string _dir =
-        Environment.GetEnvironmentVariable("DATA_DIR")
-        ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data");
-
+        private static readonly string _dir = Environment.GetEnvironmentVariable("DATA_DIR") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AlbionLootBot");
         private readonly string _path = Path.Combine(_dir, "config.json");
 
         public Dictionary<ulong, TaxConfig> Configs { get; private set; }
 
         public JsonService()
         {
-            if (!Directory.Exists("data")) Directory.CreateDirectory("data");
             Configs = new();
             Configs = Load();
         }
