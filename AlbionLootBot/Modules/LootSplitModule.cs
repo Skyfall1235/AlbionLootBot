@@ -232,7 +232,7 @@ namespace AlbionLootBot.Modules
             }
             catch
             {
-                await FollowupAsync($"Unable to find pootsplit : '{splitName}' in database");
+                await FollowupAsync($"Unable to find lootsplit : '{splitName}' in database");
             }
 
             try
