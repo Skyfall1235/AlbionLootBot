@@ -21,26 +21,41 @@ namespace AlbionLootBot.Services
             _context.AOGuilds.Add(newGuildInfo);
             await _context.SaveChangesAsync();
         }
-        //change guild info
-        public async Task ChangeGuildInfo()
-        {
 
-        }
         //change guild tax rate
-        public async Task SetGuildTaxRate(GuildTaxType taxType, long newValue)
+        public async Task SetGuildTaxRate(string AOGuildName, GuildTaxType taxType, long newValue)
         {
             //get db item, set vbalue, save
+            await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
+            AOGuildInfo? existingGuild = _context.AOGuilds.FirstOrDefault(aog => aog.AlbionOnlineGuildName == AOGuildName);
         }
-        //confirm user and role of guild?
-        //drop info about bot, like basic commands, and usage
-        public async Task DisplayBotInfo()
-        {
 
+        //VIEW guild tax rate
+        public async Task ViewGuildTaxRate(string AOGuildName)
+        {
+            //get db item, set vbalue, save
+            await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
+            AOGuildInfo? existingGuild = _context.AOGuilds.FirstOrDefault(aog => aog.AlbionOnlineGuildName == AOGuildName);
         }
+
+        //confirm user and role of guild?
+
+
+
         //report bugs command
         public async Task ReportBug()
         {
-
+            //this should go... somewhere
+        }
+        //audit lot of a split
+        public async Task<List<LootItem>?> AuditSplit(string sessionName)
+        {
+            await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
+            List<LootItem>? items = await _context.LootItems
+                .Where(item => item.Lootsplit.SessionName == sessionName)
+                .Include(item => item.Contributor)
+                .ToListAsync();
+            return items;
         }
 
     }

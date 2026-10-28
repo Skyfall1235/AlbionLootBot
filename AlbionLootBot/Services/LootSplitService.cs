@@ -26,7 +26,7 @@ namespace AlbionLootBot.Services
 
             if (existingSplit != null)
             {
-                throw new InvalidOperationException($"An active loot split (**{existingSplit.SessionName}**, ID: `{existingSplit.Id}`) is already open!");
+                throw new InvalidOperationException($"An active loot split '(**{existingSplit.SessionName}**', ID: `{existingSplit.Id}`) is already open!");
             }
 
             // 3. Create Lootsplit entity
@@ -147,7 +147,6 @@ namespace AlbionLootBot.Services
             Lootsplit split = await RetrieveSingleLootsplitAsyncDB(_context, existingId) ?? throw new InvalidDataException($"Session name '{existingSplitName}' not associated with any split");
             return split;
         }
-
         public async Task AddItemToLootsplitAsyncDB(int existingSplitId, LootItemDTO dto)
         {
             await using LootBotDbContext? context = await _contextFactory.CreateDbContextAsync();
@@ -226,6 +225,7 @@ namespace AlbionLootBot.Services
         protected static async Task<Lootsplit?> RetrieveSingleLootsplitAsyncDB(LootBotDbContext context, int existingSplitId)
         {
             return await context.LootSplit
+                .Where(ls => ls.Status == LootsplitStatus.Open)//only get open ones
                 .Include(ls => ls.Participants)
                 .Include(ls => ls.Items)
                 .FirstOrDefaultAsync(ls => ls.Id == existingSplitId);
@@ -261,9 +261,6 @@ namespace AlbionLootBot.Services
 
             _context.LootsplitParticipants.Remove(lsp);
 
-            _context.ChangeTracker.DetectChanges();
-            Console.WriteLine("#####################111111#################### " + _context.ChangeTracker.DebugView.LongView);
-
             await _context.SaveChangesAsync();
         }
         //name should be self explanatory, sometimes we know or dont know if they exist.
@@ -296,8 +293,6 @@ namespace AlbionLootBot.Services
             await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
 
             Lootsplit? split = await _context.LootSplit.FirstOrDefaultAsync(ls => ls.SessionName == sessionName) ?? throw new InvalidDataException("Session name not associated with any split");
-            _context.ChangeTracker.DetectChanges();
-            Console.WriteLine("######################55555################### " + _context.ChangeTracker.DebugView.LongView);
             return split.Id;
         }
 

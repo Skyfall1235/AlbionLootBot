@@ -31,7 +31,7 @@
         public void SaveTextToFile() => File.WriteAllText(_path, JsonSerializer.Serialize(Configs, new JsonSerializerOptions { WriteIndented = true }));
     }
 
-
+    //temp, removed upon rework of config service
     public static class AppPaths
     {
         public static readonly string DataDir =

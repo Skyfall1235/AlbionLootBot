@@ -170,6 +170,10 @@ public class LootItem
 
     public TaxableEntity TaxableEntity { get; set; }
 
+    [ForeignKey(nameof(Contributor))]
+    public int ContributorId { get; set; }
+    public Player Contributor { get; set; } = null!;
+
     public long ValueSilver { get; set; }
 
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;

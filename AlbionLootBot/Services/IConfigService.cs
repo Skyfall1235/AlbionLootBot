@@ -24,4 +24,8 @@ public class NewConfigService
     {
 
     }
+    void UpdateConfig()
+    {
+
+    }
 }

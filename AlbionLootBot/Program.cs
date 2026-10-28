@@ -121,3 +121,14 @@ await client.LoginAsync(TokenType.Bot, apiKey);
 await client.StartAsync();
 
 await host.RunAsync();
+
+//make the inputs for silver to take Ks instead of full ,000
+//if a person adds to a lootsplit, add that user to the split
+//add value should be simplified
+//change from dashs to camel case for commands
+//help command required inmprovemenrt
+//add name to coinbags so we can track people silver***
+//calculate and close should be seperate (and calcandsClose)
+//add remove omney to cut shares early
+//cut in people for later lootsaplits so they only get loot for what they joined in later or whatever
+
