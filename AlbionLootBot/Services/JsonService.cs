@@ -4,7 +4,11 @@
 
     public class JsonService
     {
-        private readonly string _path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "config.json");
+        private static readonly string _dir =
+        Environment.GetEnvironmentVariable("DATA_DIR")
+        ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data");
+
+        private readonly string _path = Path.Combine(_dir, "config.json");
 
         public Dictionary<ulong, TaxConfig> Configs { get; private set; }
 
