@@ -28,22 +28,23 @@ public class CalculationParticipantPayout
 
 //for keeping better track of guilds
 [Table("AOGuildInfo")]
-public class AOGuildInfo
+public class AOGuildInfo(string albionOnlineGuildName, ulong discordGuildId, decimal silverTaxRate, decimal itemValueTaxRate, decimal resourceTaxRate)
 {
     [Key]
     public int Id { get; set; }
     //albion online guild name
-    public string AlbionOnlineGuildName { get; set; } = "";
+    public string AlbionOnlineGuildName { get; set; } = albionOnlineGuildName;
     //personal discord server id?
-    public ulong DiscordGuildId { get; set; }
+    public ulong DiscordGuildId { get; set; } = discordGuildId;
     //silver tax rate, resource tax rate, loot tax rate
     [Column(TypeName = "decimal(5,2)")]
-    public decimal SilverTaxRate { get; set; }
+    public decimal SilverTaxRate { get; set; } = silverTaxRate;
     [Column(TypeName = "decimal(5,2)")]
-    public decimal ItemValueTaxRate { get; set; }
+    public decimal ItemValueTaxRate { get; set; } = itemValueTaxRate;
     [Column(TypeName = "decimal(5,2)")]
-    public decimal ResourceTaxRate { get; set; }
+    public decimal ResourceTaxRate { get; set; } = resourceTaxRate;
     //role id for admin? maybe list of roles?
+
 }
 
 [Table("GuildTaxEntry")]

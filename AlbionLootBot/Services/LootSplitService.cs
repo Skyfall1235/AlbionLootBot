@@ -360,7 +360,6 @@ namespace AlbionLootBot.Services
 
         //supporting methods
         //this can have the context factory pulled out
-
         public LootSplitUserContextDTO CreateUserContextDto(IUser user, ulong guildId)
         {
             return new LootSplitUserContextDTO(
@@ -370,7 +369,5 @@ namespace AlbionLootBot.Services
                 GlobalName: user.GlobalName
             );
         }
-
-
     }
 }
