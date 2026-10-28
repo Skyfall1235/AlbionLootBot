@@ -85,6 +85,20 @@ client.Ready += async () =>
 
 };
 
+client.JoinedGuild += async (SocketGuild guild) =>
+{
+    try
+    {
+        // The modules are already loaded via Ready, so we just map them to the new guild ID immediately
+        await interactionService.RegisterCommandsToGuildAsync(guild.Id);
+        Console.WriteLine($"🎉 Joined new server and registered commands to: {guild.Name} ({guild.Id})");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"⚠️ Failed to register commands on join for {guild.Name}: {ex.Message}");
+    }
+};
+
 client.SlashCommandExecuted += async (interaction) =>
 {
     var ctx = new SocketInteractionContext(client, interaction);
