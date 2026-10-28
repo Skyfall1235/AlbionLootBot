@@ -1,0 +1,15 @@
+﻿services:
+  albionlootbot:
+    image: ghcr.io/YOURUSERNAME/albionlootbot:${TAG:-latest}
+    build: .
+    container_name: albionlootbot
+    restart: unless-stopped
+    env_file:
+      - lootbot.env
+    environment:
+      - DB_PATH=/data/lootbot.db
+    volumes:
+      - lootbot-data:/data
+
+volumes:
+  lootbot-data:

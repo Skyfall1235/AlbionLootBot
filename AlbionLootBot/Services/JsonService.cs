@@ -1,16 +1,16 @@
-﻿using System.Text.Json;
-
-namespace AlbionLootBot.Services
+﻿namespace AlbionLootBot.Services
 {
+    using System.Text.Json;
+
     public class JsonService
     {
-        private readonly string _path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "config.json");
+        private static readonly string _dir = Environment.GetEnvironmentVariable("DATA_DIR") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AlbionLootBot");
+        private readonly string _path = Path.Combine(_dir, "config.json");
 
         public Dictionary<ulong, TaxConfig> Configs { get; private set; }
 
         public JsonService()
         {
-            if (!Directory.Exists("data")) Directory.CreateDirectory("data");
             Configs = new();
             Configs = Load();
         }
@@ -29,5 +29,15 @@ namespace AlbionLootBot.Services
         }
 
         public void SaveTextToFile() => File.WriteAllText(_path, JsonSerializer.Serialize(Configs, new JsonSerializerOptions { WriteIndented = true }));
+    }
+
+
+    public static class AppPaths
+    {
+        public static readonly string DataDir =
+            Environment.GetEnvironmentVariable("DATA_DIR")
+            ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data");
+
+        public static string File(string name) => Path.Combine(DataDir, name);
     }
 }

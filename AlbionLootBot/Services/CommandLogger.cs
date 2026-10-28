@@ -14,7 +14,7 @@ public class CommandLogger
     public static async Task LogCommandCall(SlashCommandInfo info, IInteractionContext context, IResult result)
     {
         var user = context.User;
-        var commandName = info.Name;
+        var commandName = info?.Name;
 
         string consoleLine =
             result.IsSuccess ?

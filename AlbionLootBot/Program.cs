@@ -14,8 +14,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSingleton(new DiscordSocketConfig
 {
-    GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMessages,
-    AlwaysDownloadUsers = true
+    GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages
 });
 
 builder.Services.AddSingleton<DiscordSocketClient>();
@@ -26,8 +25,14 @@ builder.Services.AddSingleton(provider =>
 });
 
 
+// Login and Start
+Env.TraversePath().Load("lootbot.env");
+//if (File.Exists("lootbot.env")) Env.Load();
+
+
 //ADD THE NORMAL SERVICES
-builder.Services.AddDbContextFactory<LootBotDbContext>(options => options.UseSqlite("Data Source=lootbot.db"));
+var dbPath = Environment.GetEnvironmentVariable("DB_PATH") ?? "lootbot.db";
+builder.Services.AddDbContextFactory<LootBotDbContext>(options => options.UseSqlite($"Data Source={dbPath}"));
 
 builder.Services.AddSingleton<JsonService>();
 builder.Services.AddSingleton<IConfigService, ConfigService>();
@@ -53,23 +58,31 @@ InteractionService? interactionService = host.Services.GetRequiredService<Intera
 
 client.Ready += async () =>
 {
-    await interactionService.AddModulesAsync(typeof(Program).Assembly, host.Services);
-    await Task.Delay(3000);
-    var guilds = client.Guilds;
-    if (guilds != null)
+    try
     {
-        foreach (SocketGuild guild in guilds)
+        await interactionService.AddModulesAsync(typeof(Program).Assembly, host.Services);
+        await Task.Delay(3000);
+        var guilds = client.Guilds;
+        if (guilds != null)
         {
-            await interactionService.RegisterCommandsToGuildAsync(guild.Id);
-            Console.WriteLine($"✅ Registered {interactionService.Modules.Count} modules to {guild.Name}");
-            Console.WriteLine($"✅ Connected to {guild.Name} ({guild.Id}) and registered commands!");
+            foreach (SocketGuild guild in guilds)
+            {
+                await interactionService.RegisterCommandsToGuildAsync(guild.Id);
+                Console.WriteLine($"✅ Registered {interactionService.Modules.Count} modules to {guild.Name}");
+                Console.WriteLine($"✅ Connected to {guild.Name} ({guild.Id}) and registered commands!");
+            }
         }
+        else
+        {
+            Console.WriteLine("⚠️ The bot isn't in any servers yet! Invite it to your server first.");
+        }
+        Console.WriteLine($"✅ Connected all guilds! Count: {client.Guilds.Count}");
     }
-    else
+    catch (Exception ex)
     {
-        Console.WriteLine("⚠️ The bot isn't in any servers yet! Invite it to your server first.");
+        Console.WriteLine($"READY HANDLER FAILED: {ex}");
     }
-    Console.WriteLine($"✅ Connected all guilds! Count: {client.Guilds.Count}");
+
 };
 
 client.SlashCommandExecuted += async (interaction) =>
@@ -84,12 +97,11 @@ client.SlashCommandExecuted += async (interaction) =>
 
 interactionService.SlashCommandExecuted += CommandLogger.LogCommandCall;
 
-
-
-// Login and Start
-Env.Load();
 string apiKey = Environment.GetEnvironmentVariable("DiscordToken") ?? throw new Exception("Discord token Environment variable not found");
 Console.WriteLine($"Discord token found, Bot will now begin!");
+
+client.Log += msg => { Console.WriteLine(msg.ToString()); return Task.CompletedTask; };
+interactionService.Log += msg => { Console.WriteLine(msg.ToString()); return Task.CompletedTask; };
 
 await client.LoginAsync(TokenType.Bot, apiKey);
 await client.StartAsync();

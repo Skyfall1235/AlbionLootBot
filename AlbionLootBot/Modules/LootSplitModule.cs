@@ -117,7 +117,7 @@ namespace AlbionLootBot.Modules
             try
             {
                 newSplit = await splitService.CreateSplitAsync(user, splitName, guildId, taxRate, users);
-                await ReplyAsync($"Split {newSplit.SessionName} created! ID - {newSplit.Id}");
+                await ReplyAsync($"Split {newSplit.SessionName} created! ID: {newSplit.Id}");
                 await FollowupAsync($"this will require multiple steps probably, and may be combined in the future :)", ephemeral: true);
             }
             catch (InvalidOperationException IOEx)

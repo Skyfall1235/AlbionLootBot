@@ -9,14 +9,14 @@ namespace AlbionLootBot.Modules
     {
         private readonly InteractionService _interactionService;
 
-        public AdminModule(InteractionService interactionService, AdminService adminService, LootSplitService splitService)
+        public AdminModule(InteractionService interactionService, LootSplitService splitService)
         {
             _interactionService = interactionService;
-            this.adminService = adminService;
+            //this.adminService = adminService;
             this.splitService = splitService;
         }
 
-        private readonly AdminService adminService;
+        //private readonly AdminService adminService;
         private readonly LootSplitService splitService;
 
 
