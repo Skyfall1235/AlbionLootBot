@@ -6,7 +6,7 @@ public partial class LootSplitModule : InteractionModuleBase<SocketInteractionCo
 {
     protected async Task<Player> ConfirmUserExists(SocketInteractionContext context)
     {
-        Player? player = await splitService.GetPlayerDBInfo(Context.User);
+        Player? player = await playerManagement.GetPlayerDBInfo(Context.User);
         if (player != null) return player;
         //if it fails, alert
         throw new UserNotFoundException("User not found in Database");

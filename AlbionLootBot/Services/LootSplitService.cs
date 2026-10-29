@@ -6,9 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AlbionLootBot.Services
 {
-    public class LootSplitService(IDbContextFactory<LootBotDbContext> _contextFactory)
+    public class LootSplitService(IDbContextFactory<LootBotDbContext> _contextFactory, PlayerManagementService PlayerManagement)
     {
         private readonly IDbContextFactory<LootBotDbContext> _contextFactory = _contextFactory;
+        private readonly PlayerManagementService playerManagement = PlayerManagement;
 
         #region Create, modify, and Delete
         public async Task<Lootsplit> CreateSplitAsync(
@@ -40,7 +41,7 @@ namespace AlbionLootBot.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            Player initialParticipant = await FindOrGetPlayerAsyncDB(_context, user, guildId);
+            Player initialParticipant = await playerManagement.FindOrGetPlayerAsyncDB(_context, user, guildId);
 
             // 4. Add creator as initial participant
             newSplit.Participants.Add(new LootsplitParticipant
@@ -57,7 +58,7 @@ namespace AlbionLootBot.Services
 
                 foreach (IUser ap in Participants)
                 {
-                    Player apPlayer = await FindOrGetPlayerAsyncDB(_context, ap, guildId);
+                    Player apPlayer = await playerManagement.FindOrGetPlayerAsyncDB(_context, ap, guildId);
                     LootsplitParticipant lsap = (new LootsplitParticipant
                     {
                         Lootsplit = newSplit,
@@ -108,7 +109,7 @@ namespace AlbionLootBot.Services
         public async Task AddPlayerToExistingSplitAsync(int existingSplitId, IUser user, ulong guildId)
         {
             await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
-            Player playerEntry = await FindOrGetPlayerAsyncDB(_context, user, guildId);
+            Player playerEntry = await playerManagement.FindOrGetPlayerAsyncDB(_context, user, guildId);
 
             //find if the participant is already in the split
             bool alreadyJoined = await _context.LootsplitParticipants
@@ -125,7 +126,7 @@ namespace AlbionLootBot.Services
         public async Task RemovePlayerFromExistingSplitAsync(int existingSplitId, IUser user, ulong guildId)
         {
             await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
-            Player playerEntry = await FindOrGetPlayerAsyncDB(_context, user, guildId);
+            Player playerEntry = await playerManagement.FindOrGetPlayerAsyncDB(_context, user, guildId);
 
             //find if the participant is already in the split
             bool alreadyJoined = await _context.LootsplitParticipants
@@ -200,10 +201,10 @@ namespace AlbionLootBot.Services
         {
             //we will use the user to condfirm they are in the split, if not then follow up with a not allowed action excerption i think
             await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
-            Player playerEntry = await FindOrGetPlayerAsyncDB(_context, user, guildId);
+            Player playerEntry = await playerManagement.FindOrGetPlayerAsyncDB(_context, user, guildId);
 
             //confirm user is in split first
-            bool exists = await DoesPlayerExistInLootSplitAsyncDB(_context, existingSplitId, playerEntry);
+            bool exists = await PlayerManagementService.DoesPlayerExistInLootSplitAsyncDB(_context, existingSplitId, playerEntry);
             if (!exists) throw new UserNotFoundException("User does not exist in the lootsplit entered");
 
             //retrieve, convert and seal, the return
@@ -216,10 +217,6 @@ namespace AlbionLootBot.Services
         #endregion
 
         #region Db interaction
-        protected static async Task<bool> DoesPlayerExistInLootSplitAsyncDB(LootBotDbContext context, int existingSplitId, Player playerEntry)
-        {
-            return await context.LootsplitParticipants.AnyAsync(p => p.LootsplitId == existingSplitId && p.PlayerId == playerEntry.Id);
-        }
 
         //can return null!!!
         protected static async Task<Lootsplit?> RetrieveSingleLootsplitAsyncDB(LootBotDbContext context, int existingSplitId)
@@ -239,7 +236,7 @@ namespace AlbionLootBot.Services
             if (!splitExists)
                 throw new InvalidOperationException($"Attempting to save to a lootsplit (id - {existingSplitId}) that does not exist");
 
-            if (await DoesPlayerExistInLootSplitAsyncDB(_context, existingSplitId, player))
+            if (await PlayerManagementService.DoesPlayerExistInLootSplitAsyncDB(_context, existingSplitId, player))
                 throw new InvalidOperationException($"Player {player.Id} is already a participant in lootsplit {existingSplitId}");
 
 
@@ -251,6 +248,7 @@ namespace AlbionLootBot.Services
             _context.LootsplitParticipants.Add(participant);
             await _context.SaveChangesAsync();
         }
+
         protected async Task RemoveParticipantFromSplitAsyncDB(int existingSplitId, Player player)
         {
             await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
@@ -263,30 +261,6 @@ namespace AlbionLootBot.Services
 
             await _context.SaveChangesAsync();
         }
-        //name should be self explanatory, sometimes we know or dont know if they exist.
-        public async Task<Player> FetchOrCreatePlayerAsyncDB(LootBotDbContext context, LootSplitUserContextDTO userContext)
-        {
-            //check if the player is already saved inside the database disk table rows
-            var player = await context.Players
-                .FirstOrDefaultAsync(p => p.DiscordPlayerId == userContext.DiscordUserId);
-
-            if (player != null)
-            {
-                return player;
-            }
-
-            //if they do not exist anywhere, initialize
-            player = new Player
-            {
-                DiscordPlayerId = userContext.DiscordUserId,
-                DiscordName = userContext.DiscordUsername,
-                Name = userContext.GlobalName ?? userContext.DiscordUsername,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            context.Players.Add(player);
-            return player;
-        }
 
         public async Task<int> GetSplitIdFromSessionNameAsyncDB(string sessionName)
         {
@@ -294,14 +268,6 @@ namespace AlbionLootBot.Services
 
             Lootsplit? split = await _context.LootSplit.FirstOrDefaultAsync(ls => ls.SessionName == sessionName) ?? throw new InvalidDataException("Session name not associated with any split");
             return split.Id;
-        }
-
-        public async Task<Player> FindOrGetPlayerAsyncDB(LootBotDbContext context, IUser user, ulong guildId)
-        {
-            LootSplitUserContextDTO userContext = CreateUserContextDto(user, guildId);
-            Player playerEntry = await FetchOrCreatePlayerAsyncDB(context, userContext);
-            await context.SaveChangesAsync();
-            return playerEntry;
         }
 
         //can return null!!!
@@ -314,7 +280,17 @@ namespace AlbionLootBot.Services
             return split.CreateFromLootsplit();
         }
 
-        protected async Task<ICollection<Lootsplit>> FindAllSplitsForUserAsyncDB(int PlayerId, LootBotDbContext _context)
+
+        #region Finding Splits
+        public async Task<ICollection<Lootsplit>> FindAllSplitsForUser(int playerId)
+        {
+            await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
+
+            ICollection<Lootsplit> PlayerSplits = await FindAllSplitsForUserAsyncDB(playerId, _context);
+            return PlayerSplits;
+        }
+
+        public async Task<ICollection<Lootsplit>> FindAllSplitsForUserAsyncDB(int PlayerId, LootBotDbContext _context)
         {
             //get all 
             ICollection<Lootsplit> playerSplits = await _context.LootsplitParticipants
@@ -344,25 +320,10 @@ namespace AlbionLootBot.Services
             .ToListAsync();
         }
 
-        //can return null!!!
-        public async Task<Player?> GetPlayerDBInfo(IUser user)
-        {
-            await using LootBotDbContext? _context = await _contextFactory.CreateDbContextAsync();
-            Player? player = await _context.Players.Where(p => p.DiscordPlayerId == user.Id).FirstOrDefaultAsync();
-            return player;//zero is gonna be undefined i think
-        }
         #endregion
 
-        //supporting methods
-        //this can have the context factory pulled out
-        public LootSplitUserContextDTO CreateUserContextDto(IUser user, ulong guildId)
-        {
-            return new LootSplitUserContextDTO(
-                GuildId: guildId,
-                DiscordUserId: user.Id,
-                DiscordUsername: user.Username,
-                GlobalName: user.GlobalName
-            );
-        }
+        #endregion
+
     }
+
 }

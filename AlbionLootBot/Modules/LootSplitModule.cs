@@ -7,14 +7,15 @@ using System.Text.RegularExpressions;
 
 namespace AlbionLootBot.Modules
 {
-    public partial class LootSplitModule(InteractionService interactionService, LootSplitService splitService, ConfigService config) : InteractionModuleBase<SocketInteractionContext>
+    public partial class LootSplitModule(InteractionService interactionService, LootSplitService splitService, ConfigService config, PlayerManagementService playerManagementService) : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly InteractionService _interactionService = interactionService;
         private readonly LootSplitService splitService = splitService;
+        private readonly PlayerManagementService playerManagement = playerManagementService;
         private readonly ConfigService _configService = config;
 
         //add member + remove member from split
-        [SlashCommand("add-split-participant", "Add a participant to a currently open split.")]
+        [SlashCommand("AddParticipant", "Add a participant to a currently open split.")]
         public async Task AddSplitParticipant(
             [Summary(description: "the @mention of a member to be added to this split")] IUser newParticipant,
             [Summary(description: "What is the name for this lootsplit?")] string splitName)
@@ -40,7 +41,7 @@ namespace AlbionLootBot.Modules
             }
         }
 
-        [SlashCommand("remove-split-participant", "Remove a member from a currently open lootsplit")]
+        [SlashCommand("RemoveParticipant", "Remove a member from a currently open lootsplit")]
         public async Task RemoveSplitParticipant(
             [Summary(description: "the @mention of a member to be added to this split")] IUser userToBeRemoved,
             [Summary(description: "What is the name for this lootsplit?")] string splitName)
@@ -61,7 +62,7 @@ namespace AlbionLootBot.Modules
         }
 
         //make split,
-        [SlashCommand("create-split", "Create new lootsplit for you and potentially your friends!")]
+        [SlashCommand("CreateSplit", "Create new lootsplit for you and potentially your friends!")]
         public async Task CreateSplit(
             [Summary(description: "What is the name for this lootsplit?")] string splitName,
             [Summary(description: "Space-separated list of @mentions for all group members")] string participantsInput = "")
@@ -127,7 +128,7 @@ namespace AlbionLootBot.Modules
         }
 
         //delete split,
-        [SlashCommand("delete-split", "this does not currently have confirmation. If you do this, statistics for your guild may be lost.")]
+        [SlashCommand("DeleteSplit", "this does not currently have confirmation. If you do this, statistics for your guild may be lost.")]
         public async Task DeleteSplit(
             [Summary(description: "What is the name of the lootsplit?")] string splitName)
         {
@@ -140,7 +141,7 @@ namespace AlbionLootBot.Modules
         }
 
         //see all available splits for the user
-        [SlashCommand("view-active-splits", "See your active splits")]
+        [SlashCommand("ViewActiveSplits", "See your active splits")]
         public async Task ViewUserActiveSplits()
         {
             await DeferAsync();
@@ -166,7 +167,7 @@ namespace AlbionLootBot.Modules
         }
 
         //see all active splits for admin
-        [SlashCommand("view-all-active-splits", "Admin view of all active splits")]
+        [SlashCommand("ViewAllActiveSplits", "Admin view of all active splits")]
         public async Task ViewAllActiveSplits()
         {
             await DeferAsync();
@@ -174,7 +175,7 @@ namespace AlbionLootBot.Modules
             try
             {
                 Player player = await ConfirmUserExists(Context);
-                ICollection<Lootsplit> lootsplitList = await splitService.FindRunningSplitsForUserAsyncDB(player.Id);
+                ICollection<Lootsplit> lootsplitList = await splitService.FindAllSplitsForUser(player.Id);
 
                 string sessionNamesList = string.Join(", ", lootsplitList.Select(s => s.SessionName));
 
@@ -192,7 +193,7 @@ namespace AlbionLootBot.Modules
         }
 
         //add to split total w/ items,
-        [SlashCommand("add-item-value", "Add Silver or Item vlaue to the split")]
+        [SlashCommand("AddItemValue", "Add Silver or Item vlaue to the split")]
         public async Task AddItemValueToSplit(
             [Summary(description: "What is the name for this lootsplit?")] string sessionName,
             [Summary(description: "Silver or Items?")] TaxableEntity entityType,
@@ -204,8 +205,11 @@ namespace AlbionLootBot.Modules
             int existingSplitId;
             try
             {
+                //add player to pslit if they arent in it already
+
                 existingSplitId = await splitService.GetSplitIdFromSessionNameAsyncDB(sessionName);
                 await splitService.AddItemToLootsplitAsyncDB(existingSplitId, newDto);
+                await splitService.AddPlayerToExistingSplitAsync(existingSplitId, Context.User, guildId);
                 await FollowupAsync($"{entityType} item with silver value of {itemValue} added to {sessionName}");
             }
             catch (Exception ex)
@@ -218,7 +222,7 @@ namespace AlbionLootBot.Modules
         //calculate split,
         //eventualyl we could have it so the tax is per PERSON to each guild
         //via using tax via guild and the aformentioned per person calulation logic
-        [SlashCommand("calculate-split", "Calculate the lootsplit per person AND close the lootsplit")]
+        [SlashCommand("CalculateSplit", "Calculate the lootsplit per person AND close the lootsplit")]
         public async Task CalculateSplit(
             [Summary(description: "What is the name of this lootsplit?")] string splitName)
         {
@@ -247,7 +251,7 @@ namespace AlbionLootBot.Modules
         }
 
         //review split value :) (we have a full crud app now)
-        [SlashCommand("get-current-split", "Get the full split value currently")]
+        [SlashCommand("GetCurrentSplit", "Get the full split value currently")]
         public async Task GetCurrentSplit(
             [Summary(description: "What is the name of this lootsplit?")] string splitName)
         {
@@ -267,4 +271,12 @@ namespace AlbionLootBot.Modules
 
         }
     }
-}
+
+
+    public partial class AuditAndManagementModule(InteractionService interactionService, LootSplitService splitService, ConfigService config, PlayerManagementService playerManagementService) : InteractionModuleBase<SocketInteractionContext>
+    {
+        private readonly InteractionService _interactionService = interactionService;
+        private readonly LootSplitService splitService = splitService;
+        private readonly PlayerManagementService playerManagement = playerManagementService;
+        private readonly ConfigService _configService = config;
+    }
