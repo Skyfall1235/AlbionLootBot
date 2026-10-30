@@ -171,8 +171,8 @@ public class LootItem
     public TaxableEntity TaxableEntity { get; set; }
 
     [ForeignKey(nameof(Contributor))]
-    public int ContributorId { get; set; }
-    public Player Contributor { get; set; } = null!;
+    public int? ContributorId { get; set; }
+    public Player? Contributor { get; set; }
 
     public long ValueSilver { get; set; }
 

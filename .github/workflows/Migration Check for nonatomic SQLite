@@ -1,0 +1,69 @@
+name: migration-checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+env:
+  # Adjust to your repo layout
+  PROJECT: AlbionLootBot/AlbionLootBot.csproj
+  # Last migration your prod database has. The seed in ci/seed.sql must match this schema.
+  BASELINE_MIGRATION: AddGuildTaxModels
+
+jobs:
+  migrations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Install tools
+        run: |
+          sudo apt-get update && sudo apt-get install -y sqlite3
+          dotnet tool install --global dotnet-ef --version "9.0.*"
+
+      - name: Model matches migrations
+        run: dotnet ef migrations has-pending-model-changes --project "$PROJECT"
+
+      - name: Fresh database migrates cleanly
+        run: |
+          dotnet ef database update --project "$PROJECT" \
+            --connection "Data Source=$RUNNER_TEMP/fresh.db"
+
+      - name: Seeded database survives upgrade
+        run: |
+          set -euo pipefail
+          DB="$RUNNER_TEMP/seeded.db"
+          CONN="Data Source=$DB"
+          TABLES="LootSplit Players Calculations LootEntity Participants AOGuildInfo ParticipantPayout GuildTaxEntry"
+
+          counts() {
+            for t in $TABLES; do
+              echo "$t $(sqlite3 "$DB" "SELECT COUNT(*) FROM \"$t\";")"
+            done
+          }
+
+          # 1. Build the schema prod currently has, then load sample data
+          dotnet ef database update "$BASELINE_MIGRATION" --project "$PROJECT" --connection "$CONN"
+          sqlite3 "$DB" < ci/seed.sql
+          counts > "$RUNNER_TEMP/before.txt"
+
+          # 2. Apply everything newer
+          dotnet ef database update --project "$PROJECT" --connection "$CONN"
+          counts > "$RUNNER_TEMP/after.txt"
+
+          # 3. Row counts must be identical (catches cascade deletes during rebuilds)
+          echo "--- before"; cat "$RUNNER_TEMP/before.txt"
+          echo "--- after";  cat "$RUNNER_TEMP/after.txt"
+          diff "$RUNNER_TEMP/before.txt" "$RUNNER_TEMP/after.txt"
+
+          # 4. Integrity checks
+          FK=$(sqlite3 "$DB" "PRAGMA foreign_key_check;")
+          if [ -n "$FK" ]; then echo "Foreign key violations:"; echo "$FK"; exit 1; fi
+
+          INTEGRITY=$(sqlite3 "$DB" "PRAGMA integrity_check;")
+          if [ "$INTEGRITY" != "ok" ]; then echo "Integrity check failed: $INTEGRITY"; exit 1; fi

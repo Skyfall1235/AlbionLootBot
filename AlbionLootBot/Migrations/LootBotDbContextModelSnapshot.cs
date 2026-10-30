@@ -173,6 +173,9 @@ namespace AlbionLootBot.Migrations
                     b.Property<DateTime>("AddedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("ContributorId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("LootsplitId")
                         .HasColumnType("INTEGER");
 
@@ -185,6 +188,8 @@ namespace AlbionLootBot.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ContributorId");
 
                     b.HasIndex("LootsplitId");
 
@@ -308,7 +313,7 @@ namespace AlbionLootBot.Migrations
                     b.HasOne("AlbionLootBot.Models.Player", "Player")
                         .WithMany()
                         .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("AOGuildInfo");
@@ -339,11 +344,17 @@ namespace AlbionLootBot.Migrations
 
             modelBuilder.Entity("AlbionLootBot.Models.LootItem", b =>
                 {
+                    b.HasOne("AlbionLootBot.Models.Player", "Contributor")
+                        .WithMany()
+                        .HasForeignKey("ContributorId");
+
                     b.HasOne("AlbionLootBot.Models.Lootsplit", "Lootsplit")
                         .WithMany("Items")
                         .HasForeignKey("LootsplitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Contributor");
 
                     b.Navigation("Lootsplit");
                 });

@@ -273,10 +273,11 @@ namespace AlbionLootBot.Modules
     }
 
 
-    public partial class AuditAndManagementModule(InteractionService interactionService, LootSplitService splitService, ConfigService config, PlayerManagementService playerManagementService) : InteractionModuleBase<SocketInteractionContext>
+    public class AuditAndManagementModule(InteractionService interactionService, LootSplitService splitService, ConfigService config, PlayerManagementService playerManagementService) : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly InteractionService _interactionService = interactionService;
         private readonly LootSplitService splitService = splitService;
         private readonly PlayerManagementService playerManagement = playerManagementService;
         private readonly ConfigService _configService = config;
     }
+}
